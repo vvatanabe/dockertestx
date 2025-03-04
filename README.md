@@ -6,8 +6,8 @@
 
 ### Supported Services
 - **SQL Databases**: MySQL and PostgreSQL container management
-- **Cache Services**: Memcached support
-- **Future Support**: MongoDB, Redis, and other data stores
+- **Cache Services**: Memcached and Redis support
+- **Future Support**: MongoDB and other data stores
 - **Extensibility**: Easy to add custom service containers
 
 ### Simple & Powerful
@@ -50,6 +50,27 @@ Similar to other services, `NewMemcachedWithOptions` allows you to customize the
 ### PrepMemcached
 A helper function that sets up test data in a Memcached instance. It accepts a list of `memcache.Item` pointers and stores them in the cache with optional expiration times.
 
+### NewRedis
+This function starts a Redis Docker container using default settings. It uses the Redis image (`"redis"`) with the default tag (`"7.2"`). It returns a connected `*redis.Client` along with a cleanup function that removes the container after the test is done.
+
+### NewRedisWithOptions
+Similar to other services, `NewRedisWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. This provides flexibility in configuring the Redis container for specific test scenarios.
+
+### PrepRedis
+A helper function that sets up test data in a Redis instance. It accepts a map of key-value pairs and stores them in the cache with optional expiration times.
+
+### PrepRedisList
+A helper function that sets up list data in a Redis instance. It accepts a key and a list of values to be stored.
+
+### PrepRedisHash
+A helper function that sets up hash data in a Redis instance. It accepts a key and a map of field-value pairs to be stored.
+
+### PrepRedisSet
+A helper function that sets up set data in a Redis instance. It accepts a key and a list of members to be stored.
+
+### PrepRedisSortedSet
+A helper function that sets up sorted set data in a Redis instance. It accepts a key and a map of member-score pairs to be stored.
+
 ### NewDockerDB
 A helper function that starts a Docker container with the given run options, waits for the database to be ready, and returns a connected `*sql.DB` along with a cleanup function.
 
@@ -68,48 +89,66 @@ A helper struct used with `PrepDatabase` to specify the schema and initial data 
 [Previous PostgreSQL example code remains the same]
 
 ### Memcached Example
+[Previous Memcached example code remains the same]
+
+### Redis Example
 
 ```go
 package dockertestx_test
 
 import (
+    "context"
     "testing"
-    "github.com/bradfitz/gomemcache/memcache"
+    "time"
+    "github.com/redis/go-redis/v9"
     "github.com/vvatanabe/dockertestx"
 )
 
-func TestMemcached(t *testing.T) {
-    // Start a Memcached container with default options
-    client, cleanup := dockertestx.NewMemcached(t)
+func TestRedis(t *testing.T) {
+    // Start a Redis container with default options
+    client, cleanup := dockertestx.NewRedis(t)
     defer cleanup()
 
+    ctx := context.Background()
+
     // Prepare test data
-    items := []*memcache.Item{
-        {
-            Key:   "key1",
-            Value: []byte("value1"),
-        },
-        {
-            Key:   "key2",
-            Value: []byte("value2"),
-        },
+    items := map[string]interface{}{
+        "key1": "value1",
+        "key2": "value2",
     }
 
-    // Set up test data using PrepMemcached
-    if err := dockertestx.PrepMemcached(t, client, items...); err != nil {
-        t.Fatalf("PrepMemcached failed: %v", err)
+    // Set up test data using PrepRedis
+    if err := dockertestx.PrepRedis(t, client, items, time.Hour); err != nil {
+        t.Fatalf("PrepRedis failed: %v", err)
     }
 
     // Verify the data
-    for _, item := range items {
-        got, err := client.Get(item.Key)
+    for key, value := range items {
+        got, err := client.Get(ctx, key).Result()
         if err != nil {
-            t.Fatalf("failed to get item '%s': %v", item.Key, err)
+            t.Fatalf("failed to get item '%s': %v", key, err)
         }
-        if string(got.Value) != string(item.Value) {
-            t.Errorf("expected value '%s' for key '%s', but got '%s'",
-                item.Value, item.Key, got.Value)
+        if got != value {
+            t.Errorf("expected value '%v' for key '%s', but got '%v'",
+                value, key, got)
         }
+    }
+
+    // Example with Redis List
+    listKey := "mylist"
+    listValues := []interface{}{"item1", "item2", "item3"}
+    if err := dockertestx.PrepRedisList(t, client, listKey, listValues); err != nil {
+        t.Fatalf("PrepRedisList failed: %v", err)
+    }
+
+    // Example with Redis Hash
+    hashKey := "myhash"
+    hashFields := map[string]interface{}{
+        "field1": "value1",
+        "field2": "value2",
+    }
+    if err := dockertestx.PrepRedisHash(t, client, hashKey, hashFields); err != nil {
+        t.Fatalf("PrepRedisHash failed: %v", err)
     }
 }
 ```
