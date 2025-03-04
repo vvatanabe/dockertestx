@@ -3,6 +3,7 @@ module github.com/vvatanabe/dockertestx
 go 1.24.0
 
 require (
+	github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/lib/pq v1.10.9
 	github.com/ory/dockertest/v3 v3.11.0
