@@ -1,4 +1,4 @@
-module github.com/vvatanabe/sqltest
+module github.com/vvatanabe/dockertestx
 
 go 1.24.0
 

@@ -1,4 +1,4 @@
-package sqltest
+package dockertestx
 
 import "testing"
 

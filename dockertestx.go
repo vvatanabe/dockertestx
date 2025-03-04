@@ -1,17 +1,18 @@
-package sqltest
+package dockertestx
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 	"io"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 )
 
 func init() {
