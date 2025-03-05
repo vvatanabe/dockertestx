@@ -7,6 +7,7 @@
 ### Supported Services
 - **SQL Databases**: MySQL and PostgreSQL container management
 - **Cache Services**: Memcached and Redis support
+- **Object Storage**: MinIO (S3-compatible) support
 - **Future Support**: MongoDB and other data stores
 - **Extensibility**: Easy to add custom service containers
 
@@ -79,6 +80,27 @@ Prepares the test database by executing provided schema (DDL) and initial data (
 
 ### InitialDBSetup
 A helper struct used with `PrepDatabase` to specify the schema and initial data for setting up your test database.
+
+### NewMinIO
+This function starts a MinIO Docker container using default settings. It uses the MinIO image (`"minio/minio"`) with the default tag (`"latest"`). It returns a configured `*s3.Client` from AWS SDK Go v2 along with a cleanup function that ensures the container is removed after the test completes. For most cases, you can use NewMinIO directly for a quick setup.
+
+### NewMinIOWithOptions
+Similar to other services, `NewMinIOWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. It applies the default settings:
+  - Repository: "minio/minio"
+  - Tag: "latest"
+  - Environment: MINIO_ROOT_USER=minioadmin, MINIO_ROOT_PASSWORD=minioadmin
+  - Command: ["server", "/data"]
+
+This provides flexibility in configuring the MinIO container for specific test scenarios.
+
+### PrepBucket
+A helper function that creates a bucket in MinIO if it doesn't already exist. This is useful for setting up the necessary storage structure before uploading objects.
+
+### UploadObject
+A helper function that uploads a single object (file) to a specified bucket in MinIO. It accepts a bucket name, key (object path), and the object data as a byte slice.
+
+### PrepS3Objects
+A helper function that prepares a bucket with multiple objects. It first ensures the bucket exists (creating it if necessary), then uploads all the specified objects. It accepts a bucket name and a map of object keys to byte slices containing the object data.
 
 ## Examples
 
@@ -153,6 +175,66 @@ func TestRedis(t *testing.T) {
 }
 ```
 
+### MinIO (S3) Example
+```go
+package dockertestx_test
+
+import (
+	"context"
+	"io"
+	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/vvatanabe/dockertestx"
+)
+
+func TestMinIO(t *testing.T) {
+	// Start a MinIO container with default options
+	client, cleanup := dockertestx.NewMinIO(t)
+	defer cleanup()
+
+	// Define a test bucket name
+	bucketName := "test-bucket"
+	ctx := context.Background()
+
+	// Prepare test data
+	testObjects := map[string][]byte{
+		"test-file-1.txt": []byte("Hello, MinIO!"),
+		"test-file-2.txt": []byte("This is a test file"),
+		"dir/test-file-3.txt": []byte("Nested file test"),
+	}
+
+	// Set up test bucket and objects
+	err := dockertestx.PrepS3Objects(t, client, bucketName, testObjects)
+	if err != nil {
+		t.Fatalf("PrepS3Objects failed: %v", err)
+	}
+
+	// Verify objects were uploaded correctly
+	for key, expectedContent := range testObjects {
+		resp, err := client.GetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(key),
+		})
+		if err != nil {
+			t.Fatalf("Failed to get object '%s': %v", key, err)
+		}
+
+		data, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			t.Fatalf("Failed to read object '%s': %v", key, err)
+		}
+
+		if string(data) != string(expectedContent) {
+			t.Errorf("Object '%s' content mismatch. Expected '%s', got '%s'", 
+				key, string(expectedContent), string(data))
+		}
+	}
+}
+```
+
 ## Running Tests
 
 Since **dockertestx** is intended for use in unit tests, you can run your tests as usual:
@@ -165,6 +247,7 @@ go test -v ./...
 
 - [dockertest](https://github.com/ory/dockertest) helps you boot up ephermal docker images for your Go tests with minimal work.
 - [dynamotest](https://github.com/upsidr/dynamotest) is a package to help set up a DynamoDB Local Docker instance on your machine as a part of Go test code.
+- [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2) provides APIs and utilities used for interfacing with AWS services, used here for S3-compatible storage.
 
 ## Authors
 
