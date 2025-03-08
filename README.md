@@ -8,6 +8,7 @@
 - **SQL Databases**: MySQL and PostgreSQL container management
 - **Cache Services**: Memcached and Redis support
 - **Object Storage**: MinIO (S3-compatible) support
+- **NoSQL Databases**: DynamoDB Local support
 - **Future Support**: MongoDB and other data stores
 - **Extensibility**: Easy to add custom service containers
 
@@ -101,6 +102,23 @@ A helper function that uploads a single object (file) to a specified bucket in M
 
 ### PrepS3Objects
 A helper function that prepares a bucket with multiple objects. It first ensures the bucket exists (creating it if necessary), then uploads all the specified objects. It accepts a bucket name and a map of object keys to byte slices containing the object data.
+
+### NewDynamoDB
+This function starts a DynamoDB Local Docker container using default settings. It uses the DynamoDB Local image (`"amazon/dynamodb-local"`) with the default tag (`"latest"`). It returns a configured `*dynamodb.Client` from AWS SDK Go v2 along with a cleanup function that ensures the container is removed after the test completes. For most cases, you can use NewDynamoDB directly for a quick setup.
+
+### NewDynamoDBWithOptions
+Similar to other services, `NewDynamoDBWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. It applies the default settings:
+  - Repository: "amazon/dynamodb-local"
+  - Tag: "latest"
+  - Command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
+
+This provides flexibility in configuring the DynamoDB Local container for specific test scenarios.
+
+### PrepTable
+A helper function that creates a DynamoDB table if it doesn't already exist. It accepts a CreateTableInput that specifies the table schema and configuration.
+
+### PrepItems
+A helper function that puts multiple items into a DynamoDB table. It accepts a table name and a list of items to be inserted.
 
 ## Examples
 
@@ -235,6 +253,92 @@ func TestMinIO(t *testing.T) {
 }
 ```
 
+### DynamoDB Example
+```go
+package dockertestx_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/vvatanabe/dockertestx"
+)
+
+func TestDynamoDB(t *testing.T) {
+	// Start a DynamoDB Local container with default options
+	client, cleanup := dockertestx.NewDynamoDB(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Define table schema
+	tableName := "TestTable"
+	input := &dynamodb.CreateTableInput{
+		TableName: aws.String(tableName),
+		AttributeDefinitions: []types.AttributeDefinition{
+			{
+				AttributeName: aws.String("ID"),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
+		},
+		KeySchema: []types.KeySchemaElement{
+			{
+				AttributeName: aws.String("ID"),
+				KeyType:      types.KeyTypeHash,
+			},
+		},
+		ProvisionedThroughput: &types.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(5),
+			WriteCapacityUnits: aws.Int64(5),
+		},
+	}
+
+	// Create table
+	if err := dockertestx.PrepTable(t, client, input); err != nil {
+		t.Fatalf("PrepTable failed: %v", err)
+	}
+
+	// Prepare test items
+	items := []map[string]types.AttributeValue{
+		{
+			"ID":   &types.AttributeValueMemberS{Value: "1"},
+			"Name": &types.AttributeValueMemberS{Value: "Item 1"},
+		},
+		{
+			"ID":   &types.AttributeValueMemberS{Value: "2"},
+			"Name": &types.AttributeValueMemberS{Value: "Item 2"},
+		},
+	}
+
+	// Insert test items
+	if err := dockertestx.PrepItems(t, client, tableName, items); err != nil {
+		t.Fatalf("PrepItems failed: %v", err)
+	}
+
+	// Verify items were inserted correctly
+	for _, item := range items {
+		result, err := client.GetItem(ctx, &dynamodb.GetItemInput{
+			TableName: aws.String(tableName),
+			Key: map[string]types.AttributeValue{
+				"ID": item["ID"],
+			},
+		})
+		if err != nil {
+			t.Fatalf("Failed to get item: %v", err)
+		}
+
+		if result.Item["Name"].(*types.AttributeValueMemberS).Value != 
+			item["Name"].(*types.AttributeValueMemberS).Value {
+			t.Errorf("Item mismatch. Expected %v, got %v",
+				item["Name"], result.Item["Name"])
+		}
+	}
+}
+```
+
 ## Running Tests
 
 Since **dockertestx** is intended for use in unit tests, you can run your tests as usual:
@@ -247,7 +351,7 @@ go test -v ./...
 
 - [dockertest](https://github.com/ory/dockertest) helps you boot up ephermal docker images for your Go tests with minimal work.
 - [dynamotest](https://github.com/upsidr/dynamotest) is a package to help set up a DynamoDB Local Docker instance on your machine as a part of Go test code.
-- [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2) provides APIs and utilities used for interfacing with AWS services, used here for S3-compatible storage.
+- [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2) provides APIs and utilities used for interfacing with AWS services, used here for S3-compatible storage and DynamoDB Local.
 
 ## Authors
 
