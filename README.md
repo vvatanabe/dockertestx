@@ -67,10 +67,10 @@ go test -v ./...
 - [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2) provides APIs and utilities used for interfacing with AWS services, used here for S3-compatible storage and DynamoDB Local.
 - [streadway/amqp](https://github.com/streadway/amqp) Go client for AMQP 0.9.1, used for RabbitMQ integration.
 
-## Authors
+## **Authors**  
 
-* **[vvatanabe](https://github.com/vvatanabe/)** - *Main contributor*
-* Currently, there are no other contributors
+- **[vvatanabe](https://github.com/vvatanabe/)** - *Navigator* 🚀
+- **Cline (a.k.a. Ryomen Sukuna 👹)** - *Driver* 🖋️
 
 ## License
 
