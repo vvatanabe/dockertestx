@@ -7,6 +7,7 @@ dockertestx is currently in the **stable phase**, with the core feature set impl
 The following milestones have been achieved:
 
 - ✅ Established core library structure  
+- ✅ Implemented modular package-based architecture
 - ✅ RDBMS support (MySQL, PostgreSQL)  
 - ✅ Cache service support (Redis, Memcached)  
 - ✅ Cloud service compatibility (MinIO, DynamoDB Local)  
@@ -25,43 +26,41 @@ The following milestones have been achieved:
 
 ### Service-Specific Implementations
 
-#### MySQL  
-- ✅ Basic container creation (`NewMySQL`)  
-- ✅ Customization options (`NewMySQLWithOptions`)  
-- ✅ Schema & data preparation (`PrepDatabase`)  
+#### SQL Package (MySQL & PostgreSQL)
+- ✅ Basic container creation (`sql.RunMySQL`, `sql.RunPostgres`)  
+- ✅ Customization options (`sql.RunMySQLWithOptions`, `sql.RunPostgresWithOptions`)  
+- ✅ Schema & data preparation (`sql.PrepDatabase`)  
 
-#### PostgreSQL  
-- ✅ Basic container creation (`NewPostgres`)  
-- ✅ Customization options (`NewPostgresWithOptions`)  
-- ✅ Schema & data preparation (`PrepDatabase`) - shared with MySQL  
+#### Redis Package
+- ✅ Basic container creation (`redis.RunRedis`)  
+- ✅ Customization options (`redis.RunRedisWithOptions`)  
+- ✅ Basic key-value data preparation (`redis.PrepRedis`)  
+- ✅ List data preparation (`redis.PrepRedisList`)  
+- ✅ Hash data preparation (`redis.PrepRedisHash`)  
+- ✅ Set data preparation (`redis.PrepRedisSet`)  
+- ✅ Sorted Set data preparation (`redis.PrepRedisSortedSet`)  
 
-#### Redis  
-- ✅ Basic container creation (`NewRedis`)  
-- ✅ Customization options (`NewRedisWithOptions`)  
-- ✅ Basic key-value data preparation (`PrepRedis`)  
-- ✅ List data preparation (`PrepRedisList`)  
-- ✅ Hash data preparation (`PrepRedisHash`)  
-- ✅ Set data preparation (`PrepRedisSet`)  
-- ✅ Sorted Set data preparation (`PrepRedisSortedSet`)  
+#### Memcached Package
+- ✅ Basic container creation (`memcached.RunMemcached`)  
+- ✅ Customization options (`memcached.RunMemcachedWithOptions`)  
+- ✅ Cache data preparation (`memcached.PrepMemcached`)  
 
-#### Memcached  
-- ✅ Basic container creation (`NewMemcached`)  
-- ✅ Customization options (`NewMemcachedWithOptions`)  
-- ✅ Cache data preparation (`PrepMemcached`)  
+#### MinIO Package (S3-Compatible)
+- ✅ Basic container creation (`minio.RunMinIO`)  
+- ✅ Customization options (`minio.RunMinIOWithOptions`)  
+- ✅ Bucket creation (`minio.PrepBucket`)  
+- ✅ Object upload (`minio.UploadObject`)  
+- ✅ Multiple object preparation (`minio.PrepS3Objects`)  
 
-#### MinIO (S3-Compatible)  
-- ✅ Basic container creation (`NewMinIO`)  
-- ✅ Customization options (`NewMinIOWithOptions`)  
-- ✅ Bucket creation (`PrepBucket`)  
-- ✅ Object upload (`UploadObject`)  
-- ✅ Multiple object preparation (`PrepS3Objects`)  
+#### DynamoDB Package
+- ✅ Basic container creation (`dynamodb.RunDynamoDB`)  
+- ✅ Customization options (`dynamodb.RunDynamoDBWithOptions`)  
+- ✅ Table creation (`dynamodb.PrepTable` / `dynamodb.CreateTable`)  
+- ✅ Item insertion (`dynamodb.PrepItems` / `dynamodb.PrepItems`)  
+- ✅ Table deletion (`dynamodb.DeleteTable`)  
 
-#### DynamoDB  
-- ✅ Basic container creation (`NewDynamoDB`)  
-- ✅ Customization options (`NewDynamoDBWithOptions`)  
-- ✅ Table creation (`PrepTable` / `CreateDynamoDBTable`)  
-- ✅ Item insertion (`PrepItems` / `PrepDynamoDBItems`)  
-- ✅ Table deletion (`DeleteDynamoDBTable`)  
+#### Internal Package
+- ✅ Shared utilities (`internal.GetEnvValue`)
 
 ### Documentation  
 
@@ -106,10 +105,11 @@ The following features are yet to be implemented or require further improvements
 
 ### Short-Term Goals (1-3 Months)  
 
-1. Implement MongoDB support  
-2. Enhance data loading capabilities  
-3. Improve stability for parallel test execution  
-4. Expand documentation  
+1. Implement MongoDB support as a new package  
+2. Update documentation to reflect the new package structure
+3. Enhance data loading capabilities  
+4. Improve stability for parallel test execution  
+5. Expand documentation with package-specific examples
 
 ### Mid-Term Goals (3-6 Months)  
 

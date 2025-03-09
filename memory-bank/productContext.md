@@ -35,13 +35,18 @@ dockertestx aims to provide developers with the following experience:
 ### Basic Usage
 
 ```go
+import (
+    "github.com/vvatanabe/dockertestx/sql"
+    "testing"
+)
+
 func TestMyService(t *testing.T) {
     // Start a MySQL container and establish a connection
-    db, cleanup := dockertestx.NewMySQL(t)
+    db, cleanup := sql.RunMySQL(t)
     defer cleanup() // Automatically stop and remove the container after the test
 
     // Prepare schema and initial data for testing
-    err := dockertestx.PrepDatabase(t, db, dockertestx.InitialDBSetup{
+    err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
         SchemaSQL: "CREATE TABLE users (id INT, name VARCHAR(255))",
         InitialData: []string{
             "INSERT INTO users VALUES (1, 'Alice')",
@@ -63,24 +68,42 @@ func TestMyService(t *testing.T) {
 Testing interactions between multiple services is also straightforward:
 
 ```go
+import (
+    "github.com/vvatanabe/dockertestx/sql"
+    "github.com/vvatanabe/dockertestx/redis"
+    "github.com/vvatanabe/dockertestx/minio"
+    "testing"
+)
+
 func TestComplexService(t *testing.T) {
     // Start a MySQL container
-    db, dbCleanup := dockertestx.NewMySQL(t)
+    db, dbCleanup := sql.RunMySQL(t)
     defer dbCleanup()
 
     // Start a Redis container
-    redis, redisCleanup := dockertestx.NewRedis(t)
+    redisClient, redisCleanup := redis.RunRedis(t)
     defer redisCleanup()
 
     // Start a MinIO (S3-compatible) container
-    s3Client, s3Cleanup := dockertestx.NewMinIO(t)
+    s3Client, s3Cleanup := minio.RunMinIO(t)
     defer s3Cleanup()
 
     // Prepare initial data for each service
-    // ...
+    err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
+        SchemaSQL: "CREATE TABLE items (id INT, name VARCHAR(255))",
+        InitialData: []string{
+            "INSERT INTO items VALUES (1, 'Item1')",
+        },
+    })
+    
+    err = redis.PrepRedis(t, redisClient, map[string]interface{}{
+        "user:1": "John Doe",
+    }, 0)
+    
+    err = minio.PrepBucket(t, s3Client, "test-bucket")
 
     // Initialize the service under test with multiple backends
-    svc := NewComplexService(db, redis, s3Client)
+    svc := NewComplexService(db, redisClient, s3Client)
 
     // Execute the test
     // ...
@@ -89,4 +112,21 @@ func TestComplexService(t *testing.T) {
 
 ## Future Vision
 
-Beyond the currently supported services, dockertestx aims to expand compatibility with more data stores and services. Continuous improvements in features and user experience will be prioritized, with the ultimate goal of making dockertestx the standard choice for integration testing in the Go ecosystem.
+Beyond the currently supported services, dockertestx aims to expand compatibility with more data stores and services by adding new dedicated packages. The modular package-based architecture allows for easier contribution and maintenance of new service implementations. Continuous improvements in features and user experience will be prioritized, with the ultimate goal of making dockertestx the standard choice for integration testing in the Go ecosystem.
+
+### Using Specific Packages
+
+The new package structure allows for selective imports based on your testing needs:
+
+```go
+// For MySQL/PostgreSQL testing only
+import "github.com/vvatanabe/dockertestx/sql"
+
+// For Redis testing only
+import "github.com/vvatanabe/dockertestx/redis"
+
+// For DynamoDB testing only
+import "github.com/vvatanabe/dockertestx/dynamodb"
+```
+
+This approach reduces unnecessary dependencies and makes your test code more focused and maintainable.

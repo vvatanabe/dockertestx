@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-**dockertestx** leverages the underlying [dockertest](https://github.com/ory/dockertest) library and builds a unified API layer on top of it. The overall architecture is structured into the following layers:
+**dockertestx** leverages the underlying [dockertest](https://github.com/ory/dockertest) library and builds a modular API layer on top of it. The architecture has been restructured into dedicated packages for each service type, allowing more flexibility and reducing unnecessary dependencies. The overall architecture is structured into the following layers:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -10,12 +10,14 @@
 └───────────────────────────┬─────────────────────────┘
                             │
 ┌───────────────────────────v─────────────────────────┐
-│                    dockertestx API                  │
+│              dockertestx Package Ecosystem          │
 │                                                     │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐ │
-│  │  MySQL  │  │ Postgres│  │  Redis  │  │DynamoDB │ │
+│  │   sql   │  │  redis  │  │memcached│  │ dynamodb│ │
 │  └─────────┘  └─────────┘  └─────────┘  └─────────┘ │
-│         ...Other Supported Services...             │
+│  ┌─────────┐  ┌─────────┐                           │
+│  │  minio  │  │internal │                           │
+│  └─────────┘  └─────────┘                           │
 └───────────────────────────┬─────────────────────────┘
                             │
 ┌───────────────────────────v─────────────────────────┐
@@ -31,31 +33,35 @@
 
 ### 1. Factory Pattern
 
-Each service's container creation and client connection are abstracted through factory functions:
+Each service's container creation and client connection are abstracted through factory functions within their respective packages:
 
 ```go
 // Example: Create a MySQL container and return a connected db.SQL instance
-func NewMySQL(t testing.TB) (*sql.DB, func())
+// In the sql package
+func RunMySQL(t testing.TB) (*sql.DB, func())
 
 // Example: Create a Redis container and return a connected redis.Client instance
-func NewRedis(t testing.TB) (*redis.Client, func())
+// In the redis package
+func RunRedis(t testing.TB) (*redis.Client, func())
 
 // Example: Create a DynamoDB container and return a connected dynamodb.Client instance
-func NewDynamoDB(t testing.TB) (*dynamodb.Client, func())
+// In the dynamodb package
+func RunDynamoDB(t testing.TB) (*dynamodb.Client, func())
 ```
 
 Each factory function manages the entire lifecycle of the container, from startup and connection establishment to cleanup after test execution.
 
 ### 2. Options Pattern
 
-To customize container configurations, dockertestx adopts the **functional options pattern**:
+To customize container configurations, each package in dockertestx adopts the **functional options pattern**:
 
 ```go
+// In the sql package
 // Define the type for option functions
 type RunOption func(*dockertest.RunOptions)
 
 // Customizable factory function
-func NewMySQLWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func())
+func RunMySQLWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func())
 ```
 
 This approach provides **default configurations** while allowing users to modify specific settings as needed.
@@ -82,16 +88,16 @@ cleanup := func() {
 
 ### 4. Helper Function Pattern
 
-To simplify test data preparation, dockertestx provides dedicated **helper functions** for each service type:
+To simplify test data preparation, each package in dockertestx provides dedicated **helper functions** for its service type:
 
 ```go
-// Prepare database schema and data
+// In the sql package - Prepare database schema and data
 func PrepDatabase(t testing.TB, db *sql.DB, setups ...InitialDBSetup) error
 
-// Prepare Redis data
+// In the redis package - Prepare Redis data
 func PrepRedis(t testing.TB, client *redis.Client, items map[string]interface{}, exp time.Duration) error
 
-// Prepare a DynamoDB table
+// In the dynamodb package - Prepare a DynamoDB table
 func PrepTable(t testing.TB, client *dynamodb.Client, input *dynamodb.CreateTableInput) error
 ```
 
@@ -99,45 +105,48 @@ These helpers **reduce boilerplate code** and allow developers to focus on the e
 
 ## Component Relationships
 
-dockertestx components are structured as follows:
+dockertestx components are now organized into dedicated packages, structured as follows:
 
 ```mermaid
 graph TD
-    A[Main Package: dockertestx] --> B[SQL DB Component]
-    A --> C[Redis Component]
-    A --> D[Memcached Component]
-    A --> E[MinIO Component]
-    A --> F[DynamoDB Component]
+    A[dockertestx Ecosystem] --> B[sql Package]
+    A --> C[redis Package]
+    A --> D[memcached Package]
+    A --> E[minio Package]
+    A --> F[dynamodb Package]
+    A --> G[internal Package]
     
-    B --> G[MySQL]
-    B --> H[PostgreSQL]
+    B --> H[MySQL]
+    B --> I[PostgreSQL]
     
-    G --> I[NewMySQL]
-    G --> J[NewMySQLWithOptions]
-    G --> K[PrepDatabase]
+    H --> J[RunMySQL]
+    H --> K[RunMySQLWithOptions]
+    B --> L[PrepDatabase]
     
-    C --> L[NewRedis]
-    C --> M[NewRedisWithOptions]
-    C --> N[PrepRedis]
-    C --> O[PrepRedisList]
-    C --> P[PrepRedisHash]
-    C --> Q[PrepRedisSet]
-    C --> R[PrepRedisSortedSet]
+    C --> M[RunRedis]
+    C --> N[RunRedisWithOptions]
+    C --> O[PrepRedis]
+    C --> P[PrepRedisList]
+    C --> Q[PrepRedisHash]
+    C --> R[PrepRedisSet]
+    C --> S[PrepRedisSortedSet]
     
-    D --> S[NewMemcached]
-    D --> T[NewMemcachedWithOptions]
-    D --> U[PrepMemcached]
+    D --> T[RunMemcached]
+    D --> U[RunMemcachedWithOptions]
+    D --> V[PrepMemcached]
     
-    E --> V[NewMinIO]
-    E --> W[NewMinIOWithOptions]
-    E --> X[PrepBucket]
-    E --> Y[UploadObject]
-    E --> Z[PrepS3Objects]
+    E --> W[RunMinIO]
+    E --> X[RunMinIOWithOptions]
+    E --> Y[PrepBucket]
+    E --> Z[UploadObject]
+    E --> AA[PrepS3Objects]
     
-    F --> AA[NewDynamoDB]
-    F --> AB[NewDynamoDBWithOptions]
-    F --> AC[PrepTable]
-    F --> AD[PrepItems]
+    F --> AB[RunDynamoDB]
+    F --> AC[RunDynamoDBWithOptions]
+    F --> AD[PrepTable]
+    F --> AE[PrepItems]
+    
+    G --> AF[Shared Utilities]
 ```
 
 ## Key Technical Decisions
@@ -165,12 +174,18 @@ if err != nil {
 
 ## Extensibility Strategy
 
-When adding support for new services, dockertestx follows this structured approach:
+With the new package-based architecture, adding support for new services follows this structured approach:
 
-1. **Create a dedicated file** (e.g., `redis.go`).  
-2. **Implement a basic factory function** (e.g., `NewRedis`).  
-3. **Implement an option-enabled factory function** (e.g., `NewRedisWithOptions`).  
-4. **Implement helper functions if needed** (e.g., `PrepRedis`).  
-5. **Verify functionality through test cases** (e.g., `redis_test.go`).  
+1. **Create a dedicated package** (e.g., `mongodb/`).  
+2. **Implement a basic factory function** (e.g., `RunMongoDB`).  
+3. **Implement an option-enabled factory function** (e.g., `RunMongoDBWithOptions`).  
+4. **Implement helper functions if needed** (e.g., `PrepCollection`).  
+5. **Verify functionality through test cases** (e.g., `mongodb_test.go`).  
+
+Benefits of the package-based approach:
+1. **Selective imports** - Users only need to import packages for services they actually use.
+2. **Reduced dependencies** - Each package only imports the client libraries it needs.
+3. **Clearer API boundaries** - Functions are naturally namespaced by their package.
+4. **Independent versioning potential** - In the future, packages could potentially be versioned independently.
 
 By following this pattern, dockertestx maintains **API consistency** and usability while making it easy to integrate new services seamlessly.

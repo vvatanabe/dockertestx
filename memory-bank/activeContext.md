@@ -2,29 +2,41 @@
 
 ## Current Development Focus
 
-The **dockertestx** library currently supports the following services, with each service implemented in a separate file:
+The **dockertestx** library has been restructured with a modular package-based architecture. Each service is now implemented in its own dedicated package:
 
-1. **MySQL** (Implemented in `dockertestx.go`) - Basic SQL database functionality  
-2. **PostgreSQL** (Implemented in `dockertestx.go`) - Basic SQL database functionality  
-3. **Redis** (Implemented in `redis.go`) - Caching and in-memory data store  
-4. **Memcached** (Implemented in `memcached.go`) - Simple caching service  
-5. **MinIO** (Implemented in `minio.go`) - S3-compatible object storage  
-6. **DynamoDB** (Implemented in `dynamodb.go`) - NoSQL database  
+1. **MySQL & PostgreSQL** (Implemented in `sql` package) - Basic SQL database functionality  
+2. **Redis** (Implemented in `redis` package) - Caching and in-memory data store  
+3. **Memcached** (Implemented in `memcached` package) - Simple caching service  
+4. **MinIO** (Implemented in `minio` package) - S3-compatible object storage  
+5. **DynamoDB** (Implemented in `dynamodb` package) - NoSQL database  
+6. **Internal utilities** (Implemented in `internal` package) - Shared helper functions
 
-Each service follows a consistent implementation pattern:
+Each service package follows a consistent implementation pattern:
 
-1. A basic constructor function (e.g., `NewMySQL`)  
-2. A constructor function with options (e.g., `NewMySQLWithOptions`)  
-3. Helper functions for preparing test data (e.g., `PrepDatabase`, `PrepRedis`)  
+1. A basic constructor function (e.g., `sql.RunMySQL`)  
+2. A constructor function with options (e.g., `sql.RunMySQLWithOptions`)  
+3. Helper functions for preparing test data (e.g., `sql.PrepDatabase`, `redis.PrepRedis`)  
+
+Using this modular approach, consumers can import only the packages they need:
+
+```go
+// Import only the SQL package
+import "github.com/vvatanabe/dockertestx/sql"
+
+// Use directly from the package
+db, cleanup := sql.RunMySQL(t)
+defer cleanup()
+```
 
 ## Recent Changes
 
 Key recent updates include:
 
-1. **Added DynamoDB support** - Introduced NoSQL database testing using the DynamoDB Local container.  
-2. **Added MinIO support** - Enabled testing for S3-compatible object storage.  
-3. **Enhanced Redis functionality** - Expanded support beyond basic key-value operations to include Lists, Hashes, Sets, and Sorted Sets.  
-4. **Stabilized core functionality** - Improved error handling and recovery mechanisms.  
+1. **Major package restructuring** - Transitioned from a single package with multiple files to a modular architecture with dedicated packages for each service.
+2. **Added DynamoDB support** - Introduced NoSQL database testing using the DynamoDB Local container.  
+3. **Added MinIO support** - Enabled testing for S3-compatible object storage.  
+4. **Enhanced Redis functionality** - Expanded support beyond basic key-value operations to include Lists, Hashes, Sets, and Sorted Sets.  
+5. **Stabilized core functionality** - Improved error handling and recovery mechanisms.  
 
 ## Next Steps
 
@@ -42,15 +54,19 @@ Currently under discussion or implementation:
 
 1. **API consistency** - Ensuring new services follow existing design patterns to minimize learning costs.  
    ```go
-   // Example of a consistent API design
-   func NewXxx(t testing.TB) (*xxx.Client, func())
-   func NewXxxWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*xxx.Client, func())
+   // Example of a consistent API design across packages
+   package xxx
+   
+   func RunXxx(t testing.TB) (*xxx.Client, func())
+   func RunXxxWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*xxx.Client, func())
    func PrepXxx(t testing.TB, client *xxx.Client, data ...) error
    ```
    
 2. **Container resource management** - Evaluating options to configure resource limits (memory, CPU) for containers to optimize host machine usage.  
    ```go
-   // Example: Applying resource limits via RunOption
+   // Example: Applying resource limits via RunOption in a specific package
+   package redis
+   
    func WithMemoryLimit(limit string) RunOption {
        return func(r *dockertest.RunOptions) {
            r.HostConfig = &docker.HostConfig{
@@ -74,7 +90,9 @@ Currently under discussion or implementation:
 
 5. **Standardizing initial data population patterns** - Establishing efficient methods to load large datasets and complex structures for testing.  
    ```go
-   // Example: Loading data from external files
+   // Example: Loading data from external files in the sql package
+   package sql
+   
    func PrepDatabaseFromFile(t testing.TB, db *sql.DB, schemaFile, dataFile string) error {
        // Read and execute SQL from files
    }
