@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/minio"
 	"io"
 	"testing"
@@ -14,7 +13,7 @@ import (
 
 func TestMinIO(t *testing.T) {
 	// Start a MinIO container with default options
-	client, cleanup := minio.NewMinIO(t)
+	client, cleanup := minio.Run(t)
 	defer cleanup()
 
 	// Define a test bucket name
@@ -82,7 +81,7 @@ func TestMinIO(t *testing.T) {
 
 func TestMinIOWithOptions(t *testing.T) {
 	// Define custom options for the MinIO container
-	runOpts := []dockertestx.RunOption{
+	runOpts := []func(*dockertest.RunOptions){
 		func(o *dockertest.RunOptions) {
 			o.Tag = "RELEASE.2023-05-04T21-44-30Z"     // Specific MinIO version
 			o.Env = append(o.Env, "MINIO_BROWSER=off") // Disable web UI
@@ -97,7 +96,7 @@ func TestMinIOWithOptions(t *testing.T) {
 	}
 
 	// Start MinIO with custom options
-	client, cleanup := minio.NewMinIOWithOptions(t, runOpts, hostConfigOpts...)
+	client, cleanup := minio.RunWithOptions(t, runOpts, hostConfigOpts...)
 	defer cleanup()
 
 	// Test that the client works by creating a bucket

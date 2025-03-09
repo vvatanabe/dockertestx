@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/internal"
 	"strings"
 	"testing"
@@ -24,14 +23,14 @@ const (
 	defaultSecretKey  = "minioadmin"
 )
 
-// NewMinIO starts a MinIO Docker container using the default settings and returns a configured S3 client
+// Run starts a MinIO Docker container using the default settings and returns a configured S3 client
 // along with a cleanup function. It uses the default MinIO image ("minio/minio") with tag "latest".
-// For more customization, use NewMinIOWithOptions.
-func NewMinIO(t testing.TB) (*s3.Client, func()) {
-	return NewMinIOWithOptions(t, nil)
+// For more customization, use RunWithOptions.
+func Run(t testing.TB) (*s3.Client, func()) {
+	return RunWithOptions(t, nil)
 }
 
-// NewMinIOWithOptions starts a MinIO Docker container using Docker and returns a configured S3 client
+// RunWithOptions starts a MinIO Docker container using Docker and returns a configured S3 client
 // along with a cleanup function. It applies the default settings:
 //   - Repository: "minio/minio"
 //   - Tag: "latest"
@@ -40,7 +39,7 @@ func NewMinIO(t testing.TB) (*s3.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewMinIOWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
+func RunWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
 	t.Helper()
 
 	// Set default run options for MinIO
