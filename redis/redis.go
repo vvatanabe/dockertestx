@@ -6,7 +6,6 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/redis/go-redis/v9"
-	"github.com/vvatanabe/dockertestx"
 	"testing"
 	"time"
 )
@@ -16,21 +15,21 @@ const (
 	defaultRedisTag   = "7.2"
 )
 
-// NewRedis starts a Redis Docker container using the default settings and returns a connected
+// Run starts a Redis Docker container using the default settings and returns a connected
 // *redis.Client along with a cleanup function. It uses the default Redis image ("redis")
-// with tag "7.2". For more customization, use NewRedisWithOptions.
-func NewRedis(t testing.TB) (*redis.Client, func()) {
-	return NewRedisWithOptions(t, nil)
+// with tag "7.2". For more customization, use RunWithOptions.
+func Run(t testing.TB) (*redis.Client, func()) {
+	return RunWithOptions(t, nil)
 }
 
-// NewRedisWithOptions starts a Redis Docker container using Docker and returns a connected
+// RunWithOptions starts a Redis Docker container using Docker and returns a connected
 // *redis.Client along with a cleanup function. It applies the default settings:
 //   - Repository: "redis"
 //   - Tag: "7.2"
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewRedisWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*redis.Client, func()) {
+func RunWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*redis.Client, func()) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")

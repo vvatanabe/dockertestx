@@ -5,16 +5,15 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/redis/go-redis/v9"
-	"github.com/vvatanabe/dockertestx"
 	redistest "github.com/vvatanabe/dockertestx/redis"
 	"testing"
 	"time"
 )
 
-// TestDefaultRedis demonstrates using NewRedis with default options.
+// TestDefaultRedis demonstrates using Run with default options.
 func TestDefaultRedis(t *testing.T) {
 	// Start a Redis container with default options.
-	client, cleanup := redistest.NewRedis(t)
+	client, cleanup := redistest.Run(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -51,7 +50,7 @@ func TestRedisWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a Redis container with a custom tag
-	client, cleanup := redistest.NewRedisWithOptions(t, []dockertestx.RunOption{customTag})
+	client, cleanup := redistest.RunWithOptions(t, []func(*dockertest.RunOptions){customTag})
 	defer cleanup()
 
 	ctx := context.Background()
@@ -85,7 +84,7 @@ func TestRedisWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a Redis container with AutoRemove option
-	client, cleanup := redistest.NewRedisWithOptions(t, nil, autoRemove)
+	client, cleanup := redistest.RunWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -115,7 +114,7 @@ func TestRedisWithCustomHostOptions(t *testing.T) {
 
 // TestRedisDataTypes demonstrates various Redis data type operations.
 func TestRedisDataTypes(t *testing.T) {
-	client, cleanup := redistest.NewRedis(t)
+	client, cleanup := redistest.Run(t)
 	defer cleanup()
 
 	ctx := context.Background()
