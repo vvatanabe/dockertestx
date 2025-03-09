@@ -25,3 +25,57 @@ Template for adding middleware support:
 - Client Library: [github.com/{USERNAME}/{REPONAME}](https://github.com/{USERNAME}/{REPONAME})  
 - Status: Pending
 ```
+
+---
+
+### Task: Add support for Cassandra
+
+- Description: Implement and test Cassandra integration in dockertestx.  
+- Middleware: Cassandra  
+- Client Library: [github.com/gocql/gocql](https://github.com/gocql/gocql)  
+- Status: Pending  
+
+---
+
+### Task: Add support for MongoDB
+
+- Description: Implement and test MongoDB integration in dockertestx.  
+- Middleware: MongoDB  
+- Client Library: [go.mongodb.org/mongo-driver](https://github.com/mongodb/mongo-go-driver)  
+- Status: Pending  
+
+---
+
+### Task: Add support for Kafka
+
+- Description: Implement and test Kafka integration in dockertestx.  
+- Middleware: Kafka  
+- Client Library: [github.com/confluentinc/confluent-kafka-go](https://github.com/confluentinc/confluent-kafka-go)  
+- Status: Pending  
+
+---
+
+### Task: Add support for RabbitMQ
+
+- Description: Implement and test RabbitMQ integration in dockertestx.  
+- Middleware: RabbitMQ  
+- Client Library: [github.com/streadway/amqp](https://github.com/streadway/amqp)  
+- Status: Pending  
+
+---
+
+### Task: Add support for Elasticsearch
+
+- Description: Implement and test Elasticsearch integration in dockertestx.  
+- Middleware: Elasticsearch  
+- Client Library: [github.com/elastic/go-elasticsearch](https://github.com/elastic/go-elasticsearch)  
+- Status: Pending  
+
+---
+
+### Task: Add support for SQS
+
+- Description: Implement and test Amazon SQS integration in dockertestx.  
+- Middleware: Amazon SQS  
+- Client Library: [github.com/aws/aws-sdk-go-v2/service/sqs](https://github.com/aws/aws-sdk-go-v2)  
+- Status: Pending  
