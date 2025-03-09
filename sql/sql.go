@@ -4,25 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
+	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/internal"
 	"io"
 	"log"
 	"testing"
 	"time"
-
-	"github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 )
 
 func init() {
 	// Since this file is used only in _test.go, suppress logging only during tests.
 	mysql.SetLogger(log.New(io.Discard, "", 0))
 }
-
-// RunOption is a function that modifies a dockertest.RunOptions.
-type RunOption func(*dockertest.RunOptions)
 
 // NewDockerDB starts a Docker container using the specified run options,
 // container port, driver name, and a function to generate the DSN.
@@ -99,7 +96,7 @@ const (
 // The DSN is generated in the format:
 //
 //	"root:<MYSQL_ROOT_PASSWORD>@tcp(<actualPort>)/<MYSQL_DATABASE>?parseTime=true".
-func NewMySQLWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
+func NewMySQLWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
 	// Set default run options for MySQL.
 	defaultRunOpts := &dockertest.RunOptions{
 		Repository: defaultMySQLImage,
@@ -146,7 +143,7 @@ func NewPostgres(t testing.TB) (*sql.DB, func()) {
 // The DSN is generated in the format:
 //
 //	"postgres://postgres:<POSTGRES_PASSWORD>@<actualPort>/<POSTGRES_DB>?sslmode=disable".
-func NewPostgresWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
+func NewPostgresWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
 	// Set default run options for PostgreSQL.
 	defaultRunOpts := &dockertest.RunOptions{
 		Repository: defaultPostgresImage,

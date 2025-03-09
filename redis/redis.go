@@ -3,13 +3,12 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/vvatanabe/dockertestx/sql"
-	"testing"
-	"time"
-
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/redis/go-redis/v9"
+	"github.com/vvatanabe/dockertestx"
+	"testing"
+	"time"
 )
 
 const (
@@ -31,7 +30,7 @@ func NewRedis(t testing.TB) (*redis.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewRedisWithOptions(t testing.TB, runOpts []sql.RunOption, hostOpts ...func(*docker.HostConfig)) (*redis.Client, func()) {
+func NewRedisWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*redis.Client, func()) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")

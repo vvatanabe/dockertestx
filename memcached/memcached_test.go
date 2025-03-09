@@ -1,13 +1,12 @@
 package memcached_test
 
 import (
-	"github.com/vvatanabe/dockertestx/memcached"
-	"github.com/vvatanabe/dockertestx/sql"
-	"testing"
-
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/vvatanabe/dockertestx"
+	"github.com/vvatanabe/dockertestx/memcached"
+	"testing"
 )
 
 // TestDefaultMemcached demonstrates using NewMemcached with default options.
@@ -49,7 +48,7 @@ func TestMemcachedWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a Memcached container with a custom tag
-	client, cleanup := memcached.NewMemcachedWithOptions(t, []sql.RunOption{customTag})
+	client, cleanup := memcached.NewMemcachedWithOptions(t, []dockertestx.RunOption{customTag})
 	defer cleanup()
 
 	// Test basic functionality

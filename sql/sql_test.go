@@ -1,11 +1,11 @@
 package sql_test
 
 import (
-	"github.com/vvatanabe/dockertestx/sql"
-	"testing"
-
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/vvatanabe/dockertestx"
+	"github.com/vvatanabe/dockertestx/sql"
+	"testing"
 )
 
 // TestDefaultMySQL demonstrates using NewMySQL with default options.
@@ -60,7 +60,7 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a MySQL container with a custom database name.
-	db, cleanup := sql.NewMySQLWithOptions(t, []sql.RunOption{customEnv})
+	db, cleanup := sql.NewMySQLWithOptions(t, []dockertestx.RunOption{customEnv})
 	defer cleanup()
 
 	// Schema SQL for creating a table.

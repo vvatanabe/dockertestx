@@ -2,15 +2,14 @@ package minio_test
 
 import (
 	"context"
-	"github.com/vvatanabe/dockertestx/minio"
-	"github.com/vvatanabe/dockertestx/sql"
-	"io"
-	"testing"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/vvatanabe/dockertestx"
+	"github.com/vvatanabe/dockertestx/minio"
+	"io"
+	"testing"
 )
 
 func TestMinIO(t *testing.T) {
@@ -83,7 +82,7 @@ func TestMinIO(t *testing.T) {
 
 func TestMinIOWithOptions(t *testing.T) {
 	// Define custom options for the MinIO container
-	runOpts := []sql.RunOption{
+	runOpts := []dockertestx.RunOption{
 		func(o *dockertest.RunOptions) {
 			o.Tag = "RELEASE.2023-05-04T21-44-30Z"     // Specific MinIO version
 			o.Env = append(o.Env, "MINIO_BROWSER=off") // Disable web UI

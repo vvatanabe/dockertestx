@@ -2,20 +2,19 @@ package redis_test
 
 import (
 	"context"
-	redis2 "github.com/vvatanabe/dockertestx/redis"
-	"github.com/vvatanabe/dockertestx/sql"
-	"testing"
-	"time"
-
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/redis/go-redis/v9"
+	"github.com/vvatanabe/dockertestx"
+	redistest "github.com/vvatanabe/dockertestx/redis"
+	"testing"
+	"time"
 )
 
 // TestDefaultRedis demonstrates using NewRedis with default options.
 func TestDefaultRedis(t *testing.T) {
 	// Start a Redis container with default options.
-	client, cleanup := redis2.NewRedis(t)
+	client, cleanup := redistest.NewRedis(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -28,7 +27,7 @@ func TestDefaultRedis(t *testing.T) {
 	}
 
 	// Set the item
-	if err := redis2.PrepRedis(t, client, items, time.Hour); err != nil {
+	if err := redistest.PrepRedis(t, client, items, time.Hour); err != nil {
 		t.Fatalf("failed to set item: %v", err)
 	}
 
@@ -52,7 +51,7 @@ func TestRedisWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a Redis container with a custom tag
-	client, cleanup := redis2.NewRedisWithOptions(t, []sql.RunOption{customTag})
+	client, cleanup := redistest.NewRedisWithOptions(t, []dockertestx.RunOption{customTag})
 	defer cleanup()
 
 	ctx := context.Background()
@@ -64,7 +63,7 @@ func TestRedisWithCustomRunOptions(t *testing.T) {
 		key: value,
 	}
 
-	if err := redis2.PrepRedis(t, client, items, time.Hour); err != nil {
+	if err := redistest.PrepRedis(t, client, items, time.Hour); err != nil {
 		t.Fatalf("failed to set item: %v", err)
 	}
 
@@ -86,7 +85,7 @@ func TestRedisWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a Redis container with AutoRemove option
-	client, cleanup := redis2.NewRedisWithOptions(t, nil, autoRemove)
+	client, cleanup := redistest.NewRedisWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -98,7 +97,7 @@ func TestRedisWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Use PrepRedis to set up test data
-	if err := redis2.PrepRedis(t, client, items, time.Hour); err != nil {
+	if err := redistest.PrepRedis(t, client, items, time.Hour); err != nil {
 		t.Fatalf("PrepRedis failed: %v", err)
 	}
 
@@ -116,7 +115,7 @@ func TestRedisWithCustomHostOptions(t *testing.T) {
 
 // TestRedisDataTypes demonstrates various Redis data type operations.
 func TestRedisDataTypes(t *testing.T) {
-	client, cleanup := redis2.NewRedis(t)
+	client, cleanup := redistest.NewRedis(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -126,7 +125,7 @@ func TestRedisDataTypes(t *testing.T) {
 			"string1": "value1",
 			"string2": "value2",
 		}
-		if err := redis2.PrepRedis(t, client, items, time.Hour); err != nil {
+		if err := redistest.PrepRedis(t, client, items, time.Hour); err != nil {
 			t.Fatalf("failed to set strings: %v", err)
 		}
 
@@ -145,7 +144,7 @@ func TestRedisDataTypes(t *testing.T) {
 		key := "list1"
 		values := []interface{}{"item1", "item2", "item3"}
 
-		if err := redis2.PrepRedisList(t, client, key, values); err != nil {
+		if err := redistest.PrepRedisList(t, client, key, values); err != nil {
 			t.Fatalf("failed to create list: %v", err)
 		}
 
@@ -172,7 +171,7 @@ func TestRedisDataTypes(t *testing.T) {
 			"field2": "value2",
 		}
 
-		if err := redis2.PrepRedisHash(t, client, key, fields); err != nil {
+		if err := redistest.PrepRedisHash(t, client, key, fields); err != nil {
 			t.Fatalf("failed to create hash: %v", err)
 		}
 
@@ -196,7 +195,7 @@ func TestRedisDataTypes(t *testing.T) {
 		key := "set1"
 		members := []interface{}{"member1", "member2", "member3"}
 
-		if err := redis2.PrepRedisSet(t, client, key, members); err != nil {
+		if err := redistest.PrepRedisSet(t, client, key, members); err != nil {
 			t.Fatalf("failed to create set: %v", err)
 		}
 
@@ -228,7 +227,7 @@ func TestRedisDataTypes(t *testing.T) {
 			"member3": 3.0,
 		}
 
-		if err := redis2.PrepRedisSortedSet(t, client, key, members); err != nil {
+		if err := redistest.PrepRedisSortedSet(t, client, key, members); err != nil {
 			t.Fatalf("failed to create sorted set: %v", err)
 		}
 
@@ -259,7 +258,7 @@ func TestRedisDataTypes(t *testing.T) {
 		}
 
 		// Set with 1 second expiration
-		if err := redis2.PrepRedis(t, client, items, time.Second); err != nil {
+		if err := redistest.PrepRedis(t, client, items, time.Second); err != nil {
 			t.Fatalf("failed to set expiring item: %v", err)
 		}
 

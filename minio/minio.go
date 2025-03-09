@@ -4,18 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/vvatanabe/dockertestx/internal"
-	"github.com/vvatanabe/dockertestx/sql"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/vvatanabe/dockertestx"
+	"github.com/vvatanabe/dockertestx/internal"
+	"strings"
+	"testing"
+	"time"
 )
 
 const (
@@ -41,7 +40,7 @@ func NewMinIO(t testing.TB) (*s3.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewMinIOWithOptions(t testing.TB, runOpts []sql.RunOption, hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
+func NewMinIOWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
 	t.Helper()
 
 	// Set default run options for MinIO
