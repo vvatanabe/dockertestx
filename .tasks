@@ -11,10 +11,7 @@ To indicate the progress of a task, the following statuses are used:
 
 - Pending: The task has not started yet. New tasks are set to this status by default.  
 - In Progress: The task is currently being worked on. Change to this status when work begins.  
-- Review: The implementation or configuration is complete and is awaiting code review or testing.  
 - Completed: The task is finished, and all necessary changes have been applied. This means the task has been merged or deployed.  
-- Blocked: The task cannot proceed due to unresolved dependencies or external factors. Use this status when waiting for another task to be completed.  
-- Canceled: The task is no longer needed or has been discontinued for some reason.  
 
 ## Task List
 
