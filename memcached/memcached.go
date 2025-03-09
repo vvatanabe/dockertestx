@@ -2,13 +2,11 @@ package memcached
 
 import (
 	"fmt"
-	"github.com/vvatanabe/dockertestx"
-	"testing"
-	"time"
-
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"testing"
+	"time"
 )
 
 const (
@@ -16,21 +14,21 @@ const (
 	defaultMemcachedTag   = "1.6.18"
 )
 
-// NewMemcached starts a Memcached Docker container using the default settings and returns a connected
+// Run starts a Memcached Docker container using the default settings and returns a connected
 // *memcache.Client along with a cleanup function. It uses the default Memcached image ("memcached")
-// with tag "1.6.18". For more customization, use NewMemcachedWithOptions.
-func NewMemcached(t testing.TB) (*memcache.Client, func()) {
-	return NewMemcachedWithOptions(t, nil)
+// with tag "1.6.18". For more customization, use RunWithOptions.
+func Run(t testing.TB) (*memcache.Client, func()) {
+	return RunWithOptions(t, nil)
 }
 
-// NewMemcachedWithOptions starts a Memcached Docker container using Docker and returns a connected
+// RunWithOptions starts a Memcached Docker container using Docker and returns a connected
 // *memcache.Client along with a cleanup function. It applies the default settings:
 //   - Repository: "memcached"
 //   - Tag: "1.6.18"
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewMemcachedWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*memcache.Client, func()) {
+func RunWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*memcache.Client, func()) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")

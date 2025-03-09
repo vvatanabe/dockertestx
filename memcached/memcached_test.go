@@ -4,15 +4,14 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/memcached"
 	"testing"
 )
 
-// TestDefaultMemcached demonstrates using NewMemcached with default options.
+// TestDefaultMemcached demonstrates using Run with default options.
 func TestDefaultMemcached(t *testing.T) {
 	// Start a Memcached container with default options.
-	client, cleanup := memcached.NewMemcached(t)
+	client, cleanup := memcached.Run(t)
 	defer cleanup()
 
 	// Test setting and getting a value
@@ -48,7 +47,7 @@ func TestMemcachedWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a Memcached container with a custom tag
-	client, cleanup := memcached.NewMemcachedWithOptions(t, []dockertestx.RunOption{customTag})
+	client, cleanup := memcached.RunWithOptions(t, []func(*dockertest.RunOptions){customTag})
 	defer cleanup()
 
 	// Test basic functionality
@@ -81,7 +80,7 @@ func TestMemcachedWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a Memcached container with AutoRemove option
-	client, cleanup := memcached.NewMemcachedWithOptions(t, nil, autoRemove)
+	client, cleanup := memcached.RunWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	// Test multiple operations
@@ -116,7 +115,7 @@ func TestMemcachedWithCustomHostOptions(t *testing.T) {
 
 // TestMemcachedOperations demonstrates various Memcached operations.
 func TestMemcachedOperations(t *testing.T) {
-	client, cleanup := memcached.NewMemcached(t)
+	client, cleanup := memcached.Run(t)
 	defer cleanup()
 
 	t.Run("Set and Get", func(t *testing.T) {
