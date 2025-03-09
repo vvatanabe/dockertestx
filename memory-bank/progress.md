@@ -59,6 +59,15 @@ The following milestones have been achieved:
 - ✅ Item insertion (`dynamodb.PrepItems` / `dynamodb.PrepItems`)  
 - ✅ Table deletion (`dynamodb.DeleteTable`)  
 
+#### RabbitMQ Package
+- ✅ Basic container creation (`rabbitmq.Run`)  
+- ✅ Customization options (`rabbitmq.RunWithOptions`)  
+- ✅ Queue creation (`rabbitmq.PrepQueue`)  
+- ✅ Exchange creation (`rabbitmq.PrepExchange`)  
+- ✅ Binding creation (`rabbitmq.PrepBinding`)  
+- ✅ Message publishing (`rabbitmq.PublishMessage`)  
+- ✅ Message consumption (`rabbitmq.ConsumeMessages`)  
+
 #### Internal Package
 - ✅ Shared utilities (`internal.GetEnvValue`)
 
@@ -77,7 +86,7 @@ The following features are yet to be implemented or require further improvements
 - ⬜ MongoDB integration  
 - ⬜ Elasticsearch integration  
 - ⬜ Additional NoSQL databases (Cassandra, CouchDB, etc.)  
-- ⬜ Message queue services (Kafka, RabbitMQ, etc.)  
+- ⬜ Message queue services (Kafka, etc.)  
 
 ### Feature Enhancements  
 

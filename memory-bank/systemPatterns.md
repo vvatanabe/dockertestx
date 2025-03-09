@@ -15,9 +15,9 @@
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐ │
 │  │   sql   │  │  redis  │  │memcached│  │ dynamodb│ │
 │  └─────────┘  └─────────┘  └─────────┘  └─────────┘ │
-│  ┌─────────┐  ┌─────────┐                           │
-│  │  minio  │  │internal │                           │
-│  └─────────┘  └─────────┘                           │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐              │
+│  │  minio  │  │ rabbitmq│  │internal │              │
+│  └─────────┘  └─────────┘  └─────────┘              │
 └───────────────────────────┬─────────────────────────┘
                             │
 ┌───────────────────────────v─────────────────────────┐
@@ -114,39 +114,48 @@ graph TD
     A --> D[memcached Package]
     A --> E[minio Package]
     A --> F[dynamodb Package]
-    A --> G[internal Package]
+    A --> G[rabbitmq Package]
+    A --> H[internal Package]
     
-    B --> H[MySQL]
-    B --> I[PostgreSQL]
+    B --> I[MySQL]
+    B --> J[PostgreSQL]
     
-    H --> J[RunMySQL]
-    H --> K[RunMySQLWithOptions]
-    B --> L[PrepDatabase]
+    I --> K[RunMySQL]
+    I --> L[RunMySQLWithOptions]
+    B --> M[PrepDatabase]
     
-    C --> M[RunRedis]
-    C --> N[RunRedisWithOptions]
-    C --> O[PrepRedis]
-    C --> P[PrepRedisList]
-    C --> Q[PrepRedisHash]
-    C --> R[PrepRedisSet]
-    C --> S[PrepRedisSortedSet]
+    C --> N[RunRedis]
+    C --> O[RunRedisWithOptions]
+    C --> P[PrepRedis]
+    C --> Q[PrepRedisList]
+    C --> R[PrepRedisHash]
+    C --> S[PrepRedisSet]
+    C --> T[PrepRedisSortedSet]
     
-    D --> T[RunMemcached]
-    D --> U[RunMemcachedWithOptions]
-    D --> V[PrepMemcached]
+    D --> U[RunMemcached]
+    D --> V[RunMemcachedWithOptions]
+    D --> W[PrepMemcached]
     
-    E --> W[RunMinIO]
-    E --> X[RunMinIOWithOptions]
-    E --> Y[PrepBucket]
-    E --> Z[UploadObject]
-    E --> AA[PrepS3Objects]
+    E --> X[RunMinIO]
+    E --> Y[RunMinIOWithOptions]
+    E --> Z[PrepBucket]
+    E --> AA[UploadObject]
+    E --> AB[PrepS3Objects]
     
-    F --> AB[RunDynamoDB]
-    F --> AC[RunDynamoDBWithOptions]
-    F --> AD[PrepTable]
-    F --> AE[PrepItems]
+    F --> AC[RunDynamoDB]
+    F --> AD[RunDynamoDBWithOptions]
+    F --> AE[PrepTable]
+    F --> AF[PrepItems]
     
-    G --> AF[Shared Utilities]
+    G --> AG[Run]
+    G --> AH[RunWithOptions]
+    G --> AI[PrepQueue]
+    G --> AJ[PrepExchange]
+    G --> AK[PrepBinding]
+    G --> AL[PublishMessage]
+    G --> AM[ConsumeMessages]
+    
+    H --> AN[Shared Utilities]
 ```
 
 ## Key Technical Decisions

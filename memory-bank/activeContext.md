@@ -9,7 +9,8 @@ The **dockertestx** library has been restructured with a modular package-based a
 3. **Memcached** (Implemented in `memcached` package) - Simple caching service  
 4. **MinIO** (Implemented in `minio` package) - S3-compatible object storage  
 5. **DynamoDB** (Implemented in `dynamodb` package) - NoSQL database  
-6. **Internal utilities** (Implemented in `internal` package) - Shared helper functions
+6. **RabbitMQ** (Implemented in `rabbitmq` package) - Message broker
+7. **Internal utilities** (Implemented in `internal` package) - Shared helper functions
 
 Each service package follows a consistent implementation pattern:
 
@@ -36,7 +37,8 @@ Key recent updates include:
 2. **Added DynamoDB support** - Introduced NoSQL database testing using the DynamoDB Local container.  
 3. **Added MinIO support** - Enabled testing for S3-compatible object storage.  
 4. **Enhanced Redis functionality** - Expanded support beyond basic key-value operations to include Lists, Hashes, Sets, and Sorted Sets.  
-5. **Stabilized core functionality** - Improved error handling and recovery mechanisms.  
+5. **Added RabbitMQ support** - Implemented message broker testing with queue, exchange, binding operations and messaging capabilities.
+6. **Stabilized core functionality** - Improved error handling and recovery mechanisms.  
 
 ## Next Steps
 
