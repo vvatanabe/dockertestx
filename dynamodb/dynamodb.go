@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"testing"
 	"time"
 )
@@ -21,21 +20,21 @@ const (
 	defaultRegion        = "us-east-1"
 )
 
-// NewDynamoDB starts a DynamoDB Local Docker container using the default settings and returns
+// Run starts a DynamoDB Local Docker container using the default settings and returns
 // a connected *dynamodb.Client along with a cleanup function. It uses the DynamoDB Local image
-// ("amazon/dynamodb-local") with tag "latest". For more customization, use NewDynamoDBWithOptions.
-func NewDynamoDB(t testing.TB) (*dynamodb.Client, func()) {
-	return NewDynamoDBWithOptions(t, nil)
+// ("amazon/dynamodb-local") with tag "latest". For more customization, use RunWithOptions.
+func Run(t testing.TB) (*dynamodb.Client, func()) {
+	return RunWithOptions(t, nil)
 }
 
-// NewDynamoDBWithOptions starts a DynamoDB Local Docker container and returns a connected
+// RunWithOptions starts a DynamoDB Local Docker container and returns a connected
 // *dynamodb.Client along with a cleanup function. It applies the default settings:
 //   - Repository: "amazon/dynamodb-local"
 //   - Tag: "latest"
 //
-// Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
+// Additional run options functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewDynamoDBWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*dynamodb.Client, func()) {
+func RunWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*dynamodb.Client, func()) {
 	t.Helper()
 
 	// Set default options for DynamoDB Local

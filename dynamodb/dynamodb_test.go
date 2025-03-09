@@ -7,14 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/ory/dockertest/v3"
-	"github.com/vvatanabe/dockertestx"
 	dynamodbtest "github.com/vvatanabe/dockertestx/dynamodb"
 	"testing"
 )
 
 func TestDynamoDB(t *testing.T) {
 	// Start a DynamoDB container with default options
-	client, cleanup := dynamodbtest.NewDynamoDB(t)
+	client, cleanup := dynamodbtest.Run(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -110,7 +109,7 @@ func TestDynamoDB(t *testing.T) {
 // TestDynamoDBWithOptions demonstrates how to customize the DynamoDB container
 func TestDynamoDBWithOptions(t *testing.T) {
 	// Use custom options
-	runOpts := []dockertestx.RunOption{
+	runOpts := []func(opts *dockertest.RunOptions){
 		func(opts *dockertest.RunOptions) {
 			opts.Tag = "1.21.0" // Specific version
 			opts.Env = append(opts.Env, "AWS_ACCESS_KEY_ID=customkey")
@@ -120,7 +119,7 @@ func TestDynamoDBWithOptions(t *testing.T) {
 	}
 
 	// Start container with custom options
-	client, cleanup := dynamodbtest.NewDynamoDBWithOptions(t, runOpts)
+	client, cleanup := dynamodbtest.RunWithOptions(t, runOpts)
 	defer cleanup()
 
 	// Verify container works
