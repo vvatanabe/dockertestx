@@ -8,7 +8,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/internal"
 	"io"
 	"log"
@@ -21,11 +20,11 @@ func init() {
 	mysql.SetLogger(log.New(io.Discard, "", 0))
 }
 
-// NewDockerDB starts a Docker container using the specified run options,
+// RunDockerDB starts a Docker container using the specified run options,
 // container port, driver name, and a function to generate the DSN.
 // Additionally, it accepts optional host configuration functions.
 // It returns a connected *sql.DB and a cleanup function.
-func NewDockerDB(t testing.TB, runOpts *dockertest.RunOptions, containerPort, driverName string, dsnFunc func(actualPort string) string, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
+func RunDockerDB(t testing.TB, runOpts *dockertest.RunOptions, containerPort, driverName string, dsnFunc func(actualPort string) string, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")
@@ -73,11 +72,11 @@ func NewDockerDB(t testing.TB, runOpts *dockertest.RunOptions, containerPort, dr
 	return db, cleanup
 }
 
-// NewMySQL starts a MySQL Docker container using the default settings and returns a connected *sql.DB
+// RunMySQL starts a MySQL Docker container using the default settings and returns a connected *sql.DB
 // along with a cleanup function. It uses the default MySQL image ("mysql") with tag "8.0". For more
-// customization, use NewMySQLWithOptions.
-func NewMySQL(t testing.TB) (*sql.DB, func()) {
-	return NewMySQLWithOptions(t, nil)
+// customization, use RunMySQLWithOptions.
+func RunMySQL(t testing.TB) (*sql.DB, func()) {
+	return RunMySQLWithOptions(t, nil)
 }
 
 const (
@@ -85,7 +84,7 @@ const (
 	defaultMySQLTag   = "8.0"
 )
 
-// NewMySQLWithOptions starts a MySQL Docker container using Docker and returns a connected *sql.DB
+// RunMySQLWithOptions starts a MySQL Docker container using Docker and returns a connected *sql.DB
 // along with a cleanup function. It applies the default settings:
 //   - Repository: "mysql"
 //   - Tag: "8.0"
@@ -96,7 +95,7 @@ const (
 // The DSN is generated in the format:
 //
 //	"root:<MYSQL_ROOT_PASSWORD>@tcp(<actualPort>)/<MYSQL_DATABASE>?parseTime=true".
-func NewMySQLWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
+func RunMySQLWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
 	// Set default run options for MySQL.
 	defaultRunOpts := &dockertest.RunOptions{
 		Repository: defaultMySQLImage,
@@ -115,7 +114,7 @@ func NewMySQLWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts
 	pass := internal.GetEnvValue(defaultRunOpts.Env, "MYSQL_ROOT_PASSWORD")
 	db := internal.GetEnvValue(defaultRunOpts.Env, "MYSQL_DATABASE")
 
-	return NewDockerDB(t, defaultRunOpts, "3306/tcp", "mysql", func(actualPort string) string {
+	return RunDockerDB(t, defaultRunOpts, "3306/tcp", "mysql", func(actualPort string) string {
 		return fmt.Sprintf("root:%s@tcp(%s)/%s?parseTime=true", pass, actualPort, db)
 	}, hostOpts...)
 }
@@ -125,14 +124,14 @@ const (
 	defaultPostgresTag   = "13"
 )
 
-// NewPostgres starts a PostgreSQL Docker container using the default settings and returns a connected *sql.DB
+// RunPostgres starts a PostgreSQL Docker container using the default settings and returns a connected *sql.DB
 // along with a cleanup function. It uses the default PostgreSQL image ("postgres") with tag "13". For more
-// customization, use NewPostgresWithOptions.
-func NewPostgres(t testing.TB) (*sql.DB, func()) {
-	return NewPostgresWithOptions(t, nil)
+// customization, use RunPostgresWithOptions.
+func RunPostgres(t testing.TB) (*sql.DB, func()) {
+	return RunPostgresWithOptions(t, nil)
 }
 
-// NewPostgresWithOptions starts a PostgreSQL Docker container using Docker and returns a connected *sql.DB
+// RunPostgresWithOptions starts a PostgreSQL Docker container using Docker and returns a connected *sql.DB
 // along with a cleanup function. It applies the default settings:
 //   - Repository: "postgres"
 //   - Tag: "13"
@@ -143,7 +142,7 @@ func NewPostgres(t testing.TB) (*sql.DB, func()) {
 // The DSN is generated in the format:
 //
 //	"postgres://postgres:<POSTGRES_PASSWORD>@<actualPort>/<POSTGRES_DB>?sslmode=disable".
-func NewPostgresWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
+func RunPostgresWithOptions(t testing.TB, runOpts []func(*dockertest.RunOptions), hostOpts ...func(*docker.HostConfig)) (*sql.DB, func()) {
 	// Set default run options for PostgreSQL.
 	defaultRunOpts := &dockertest.RunOptions{
 		Repository: defaultPostgresImage,
@@ -162,7 +161,7 @@ func NewPostgresWithOptions(t testing.TB, runOpts []dockertestx.RunOption, hostO
 	pass := internal.GetEnvValue(defaultRunOpts.Env, "POSTGRES_PASSWORD")
 	db := internal.GetEnvValue(defaultRunOpts.Env, "POSTGRES_DB")
 
-	return NewDockerDB(t, defaultRunOpts, "5432/tcp", "postgres", func(actualPort string) string {
+	return RunDockerDB(t, defaultRunOpts, "5432/tcp", "postgres", func(actualPort string) string {
 		return fmt.Sprintf("postgres://postgres:%s@%s/%s?sslmode=disable", pass, actualPort, db)
 	}, hostOpts...)
 }

@@ -3,15 +3,14 @@ package sql_test
 import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 )
 
-// TestDefaultMySQL demonstrates using NewMySQL with default options.
+// TestDefaultMySQL demonstrates using RunMySQL with default options.
 func TestDefaultMySQL(t *testing.T) {
 	// Start a MySQL container with default options.
-	db, cleanup := sql.NewMySQL(t)
+	db, cleanup := sql.RunMySQL(t)
 	defer cleanup()
 
 	// Schema SQL for creating a table in MySQL.
@@ -60,7 +59,7 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a MySQL container with a custom database name.
-	db, cleanup := sql.NewMySQLWithOptions(t, []dockertestx.RunOption{customEnv})
+	db, cleanup := sql.RunMySQLWithOptions(t, []func(*dockertest.RunOptions){customEnv})
 	defer cleanup()
 
 	// Schema SQL for creating a table.
@@ -96,10 +95,10 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 	}
 }
 
-// TestDefaultPostgres demonstrates using NewPostgres with default options.
+// TestDefaultPostgres demonstrates using RunPostgres with default options.
 func TestDefaultPostgres(t *testing.T) {
 	// Start a PostgreSQL container with default options.
-	db, cleanup := sql.NewPostgres(t)
+	db, cleanup := sql.RunPostgres(t)
 	defer cleanup()
 
 	// Schema SQL for creating a table in PostgreSQL.
@@ -143,7 +142,7 @@ func TestPostgresWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a PostgreSQL container with the AutoRemove option.
-	db, cleanup := sql.NewPostgresWithOptions(t, nil, autoRemove)
+	db, cleanup := sql.RunPostgresWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	// Schema SQL for creating a table.
