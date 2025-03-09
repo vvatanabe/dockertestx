@@ -5,8 +5,8 @@
 ## Features
 
 ### Supported Services
-- **SQL Databases**: MySQL and PostgreSQL container management
-- **Cache Services**: Memcached and Redis support
+- **SQL Databases**: MySQL 8.0 and PostgreSQL 13 container management
+- **Cache Services**: Redis 7.2 and Memcached 1.6.18 support
 - **Object Storage**: MinIO (S3-compatible) support
 - **NoSQL Databases**: DynamoDB Local support
 - **Future Support**: MongoDB and other data stores
@@ -17,327 +17,37 @@
 - **Automatic**: Container lifecycle management and health checks
 - **Flexible**: Rich customization options and configurations
 - **Reliable**: Built-in test helpers and utilities
+- **Modular**: Import only what you need, reducing dependencies
 
 ## Installation
 
-Use `go get` to install the package:
+The library uses a modular package structure. You can install:
 
 ```bash
 go get github.com/vvatanabe/dockertestx
 ```
 
+Import only specific packages as needed：
+
+```go
+import "github.com/vvatanabe/dockertestx/sql"
+import "github.com/vvatanabe/dockertestx/redis"
+import "github.com/vvatanabe/dockertestx/memcached"
+import "github.com/vvatanabe/dockertestx/minio"
+import "github.com/vvatanabe/dockertestx/dynamodb"
+```
+
 ## Usage
 
-The package provides several key functions:
+For detailed usage examples, refer to the test files in each package:
 
-### NewMySQL
-This function starts a MySQL Docker container using default settings. It uses the MySQL image (`"mysql"`) with the default tag (`"8.0"`). It returns a connected `*sql.DB` instance along with a cleanup function that ensures the container is removed after the test completes. For most cases, you can use NewMySQL directly for a quick setup.
+- **SQL Package**: See [sql/sql_test.go](https://github.com/vvatanabe/sqltest/blob/main/sql/sql_test.go) for MySQL and PostgreSQL examples
+- **Redis Package**: See [redis/redis_test.go](https://github.com/vvatanabe/sqltest/blob/main/redis/redis_test.go) for Redis examples
+- **Memcached Package**: See [memcached/memcached_test.go](https://github.com/vvatanabe/sqltest/blob/main/memcached/memcached_test.go) for Memcached examples
+- **MinIO Package**: See [minio/minio_test.go](https://github.com/vvatanabe/sqltest/blob/main/minio/minio_test.go) for S3-compatible storage examples
+- **DynamoDB Package**: See [dynamodb/dynamodb_test.go](https://github.com/vvatanabe/sqltest/blob/main/dynamodb/dynamodb_test.go) for DynamoDB examples
 
-### NewMySQLWithOptions
-For advanced usage, `NewMySQLWithOptions` allows you to customize the container's settings. In addition to the defaults used by `NewMySQL`, you can pass one or more `RunOption` functions to override any default configuration (for example, changing the environment variables, command, mounts, etc.).
-You can also provide optional host configuration options (via variadic functions) that allow you to adjust Docker's `HostConfig` settings (e.g., setting `AutoRemove` to true).
-
-### NewPostgres
-This function starts a PostgreSQL Docker container using default settings. It uses the PostgreSQL image (`"postgres"`) with the default tag (`"13"`). It returns a connected *sql.DB and a cleanup function that removes the container after the test is done. For most cases, you can use NewPostgres directly for a quick setup.
-
-### NewPostgresWithOptions
-Similar to the MySQL variant, `NewPostgresWithOptions` allows you to override the default settings by accepting additional `RunOption` functions. You can customize the container configuration (e.g., changing environment variables or other run options) and supply optional host configuration functions to adjust Docker's `HostConfig` (such as setting `AutoRemove`).
-
-### NewMemcached
-This function starts a Memcached Docker container using default settings. It uses the Memcached image (`"memcached"`) with the default tag (`"1.6.18"`). It returns a connected `*memcache.Client` along with a cleanup function that removes the container after the test is done.
-
-### NewMemcachedWithOptions
-Similar to other services, `NewMemcachedWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. This provides flexibility in configuring the Memcached container for specific test scenarios.
-
-### PrepMemcached
-A helper function that sets up test data in a Memcached instance. It accepts a list of `memcache.Item` pointers and stores them in the cache with optional expiration times.
-
-### NewRedis
-This function starts a Redis Docker container using default settings. It uses the Redis image (`"redis"`) with the default tag (`"7.2"`). It returns a connected `*redis.Client` along with a cleanup function that removes the container after the test is done.
-
-### NewRedisWithOptions
-Similar to other services, `NewRedisWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. This provides flexibility in configuring the Redis container for specific test scenarios.
-
-### PrepRedis
-A helper function that sets up test data in a Redis instance. It accepts a map of key-value pairs and stores them in the cache with optional expiration times.
-
-### PrepRedisList
-A helper function that sets up list data in a Redis instance. It accepts a key and a list of values to be stored.
-
-### PrepRedisHash
-A helper function that sets up hash data in a Redis instance. It accepts a key and a map of field-value pairs to be stored.
-
-### PrepRedisSet
-A helper function that sets up set data in a Redis instance. It accepts a key and a list of members to be stored.
-
-### PrepRedisSortedSet
-A helper function that sets up sorted set data in a Redis instance. It accepts a key and a map of member-score pairs to be stored.
-
-### NewDockerDB
-A helper function that starts a Docker container with the given run options, waits for the database to be ready, and returns a connected `*sql.DB` along with a cleanup function.
-
-### PrepDatabase
-Prepares the test database by executing provided schema (DDL) and initial data (DML) SQL statements. The initial data insertion is performed within a transaction to ensure consistency.
-
-### InitialDBSetup
-A helper struct used with `PrepDatabase` to specify the schema and initial data for setting up your test database.
-
-### NewMinIO
-This function starts a MinIO Docker container using default settings. It uses the MinIO image (`"minio/minio"`) with the default tag (`"latest"`). It returns a configured `*s3.Client` from AWS SDK Go v2 along with a cleanup function that ensures the container is removed after the test completes. For most cases, you can use NewMinIO directly for a quick setup.
-
-### NewMinIOWithOptions
-Similar to other services, `NewMinIOWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. It applies the default settings:
-  - Repository: "minio/minio"
-  - Tag: "latest"
-  - Environment: MINIO_ROOT_USER=minioadmin, MINIO_ROOT_PASSWORD=minioadmin
-  - Command: ["server", "/data"]
-
-This provides flexibility in configuring the MinIO container for specific test scenarios.
-
-### PrepBucket
-A helper function that creates a bucket in MinIO if it doesn't already exist. This is useful for setting up the necessary storage structure before uploading objects.
-
-### UploadObject
-A helper function that uploads a single object (file) to a specified bucket in MinIO. It accepts a bucket name, key (object path), and the object data as a byte slice.
-
-### PrepS3Objects
-A helper function that prepares a bucket with multiple objects. It first ensures the bucket exists (creating it if necessary), then uploads all the specified objects. It accepts a bucket name and a map of object keys to byte slices containing the object data.
-
-### NewDynamoDB
-This function starts a DynamoDB Local Docker container using default settings. It uses the DynamoDB Local image (`"amazon/dynamodb-local"`) with the default tag (`"latest"`). It returns a configured `*dynamodb.Client` from AWS SDK Go v2 along with a cleanup function that ensures the container is removed after the test completes. For most cases, you can use NewDynamoDB directly for a quick setup.
-
-### NewDynamoDBWithOptions
-Similar to other services, `NewDynamoDBWithOptions` allows you to customize the container's settings through `RunOption` functions and host configuration options. It applies the default settings:
-  - Repository: "amazon/dynamodb-local"
-  - Tag: "latest"
-  - Command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
-
-This provides flexibility in configuring the DynamoDB Local container for specific test scenarios.
-
-### PrepTable
-A helper function that creates a DynamoDB table if it doesn't already exist. It accepts a CreateTableInput that specifies the table schema and configuration.
-
-### PrepItems
-A helper function that puts multiple items into a DynamoDB table. It accepts a table name and a list of items to be inserted.
-
-## Examples
-
-### MySQL Example
-[Previous MySQL example code remains the same]
-
-### PostgreSQL Example
-[Previous PostgreSQL example code remains the same]
-
-### Memcached Example
-[Previous Memcached example code remains the same]
-
-### Redis Example
-
-```go
-package dockertestx_test
-
-import (
-    "context"
-    "testing"
-    "time"
-    "github.com/redis/go-redis/v9"
-    "github.com/vvatanabe/dockertestx"
-)
-
-func TestRedis(t *testing.T) {
-    // Start a Redis container with default options
-    client, cleanup := dockertestx.NewRedis(t)
-    defer cleanup()
-
-    ctx := context.Background()
-
-    // Prepare test data
-    items := map[string]interface{}{
-        "key1": "value1",
-        "key2": "value2",
-    }
-
-    // Set up test data using PrepRedis
-    if err := dockertestx.PrepRedis(t, client, items, time.Hour); err != nil {
-        t.Fatalf("PrepRedis failed: %v", err)
-    }
-
-    // Verify the data
-    for key, value := range items {
-        got, err := client.Get(ctx, key).Result()
-        if err != nil {
-            t.Fatalf("failed to get item '%s': %v", key, err)
-        }
-        if got != value {
-            t.Errorf("expected value '%v' for key '%s', but got '%v'",
-                value, key, got)
-        }
-    }
-
-    // Example with Redis List
-    listKey := "mylist"
-    listValues := []interface{}{"item1", "item2", "item3"}
-    if err := dockertestx.PrepRedisList(t, client, listKey, listValues); err != nil {
-        t.Fatalf("PrepRedisList failed: %v", err)
-    }
-
-    // Example with Redis Hash
-    hashKey := "myhash"
-    hashFields := map[string]interface{}{
-        "field1": "value1",
-        "field2": "value2",
-    }
-    if err := dockertestx.PrepRedisHash(t, client, hashKey, hashFields); err != nil {
-        t.Fatalf("PrepRedisHash failed: %v", err)
-    }
-}
-```
-
-### MinIO (S3) Example
-```go
-package dockertestx_test
-
-import (
-	"context"
-	"io"
-	"testing"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/vvatanabe/dockertestx"
-)
-
-func TestMinIO(t *testing.T) {
-	// Start a MinIO container with default options
-	client, cleanup := dockertestx.NewMinIO(t)
-	defer cleanup()
-
-	// Define a test bucket name
-	bucketName := "test-bucket"
-	ctx := context.Background()
-
-	// Prepare test data
-	testObjects := map[string][]byte{
-		"test-file-1.txt": []byte("Hello, MinIO!"),
-		"test-file-2.txt": []byte("This is a test file"),
-		"dir/test-file-3.txt": []byte("Nested file test"),
-	}
-
-	// Set up test bucket and objects
-	err := dockertestx.PrepS3Objects(t, client, bucketName, testObjects)
-	if err != nil {
-		t.Fatalf("PrepS3Objects failed: %v", err)
-	}
-
-	// Verify objects were uploaded correctly
-	for key, expectedContent := range testObjects {
-		resp, err := client.GetObject(ctx, &s3.GetObjectInput{
-			Bucket: aws.String(bucketName),
-			Key:    aws.String(key),
-		})
-		if err != nil {
-			t.Fatalf("Failed to get object '%s': %v", key, err)
-		}
-
-		data, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			t.Fatalf("Failed to read object '%s': %v", key, err)
-		}
-
-		if string(data) != string(expectedContent) {
-			t.Errorf("Object '%s' content mismatch. Expected '%s', got '%s'", 
-				key, string(expectedContent), string(data))
-		}
-	}
-}
-```
-
-### DynamoDB Example
-```go
-package dockertestx_test
-
-import (
-	"context"
-	"testing"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/vvatanabe/dockertestx"
-)
-
-func TestDynamoDB(t *testing.T) {
-	// Start a DynamoDB Local container with default options
-	client, cleanup := dockertestx.NewDynamoDB(t)
-	defer cleanup()
-
-	ctx := context.Background()
-
-	// Define table schema
-	tableName := "TestTable"
-	input := &dynamodb.CreateTableInput{
-		TableName: aws.String(tableName),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{
-				AttributeName: aws.String("ID"),
-				AttributeType: types.ScalarAttributeTypeS,
-			},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{
-				AttributeName: aws.String("ID"),
-				KeyType:      types.KeyTypeHash,
-			},
-		},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}
-
-	// Create table
-	if err := dockertestx.PrepTable(t, client, input); err != nil {
-		t.Fatalf("PrepTable failed: %v", err)
-	}
-
-	// Prepare test items
-	items := []map[string]types.AttributeValue{
-		{
-			"ID":   &types.AttributeValueMemberS{Value: "1"},
-			"Name": &types.AttributeValueMemberS{Value: "Item 1"},
-		},
-		{
-			"ID":   &types.AttributeValueMemberS{Value: "2"},
-			"Name": &types.AttributeValueMemberS{Value: "Item 2"},
-		},
-	}
-
-	// Insert test items
-	if err := dockertestx.PrepItems(t, client, tableName, items); err != nil {
-		t.Fatalf("PrepItems failed: %v", err)
-	}
-
-	// Verify items were inserted correctly
-	for _, item := range items {
-		result, err := client.GetItem(ctx, &dynamodb.GetItemInput{
-			TableName: aws.String(tableName),
-			Key: map[string]types.AttributeValue{
-				"ID": item["ID"],
-			},
-		})
-		if err != nil {
-			t.Fatalf("Failed to get item: %v", err)
-		}
-
-		if result.Item["Name"].(*types.AttributeValueMemberS).Value != 
-			item["Name"].(*types.AttributeValueMemberS).Value {
-			t.Errorf("Item mismatch. Expected %v, got %v",
-				item["Name"], result.Item["Name"])
-		}
-	}
-}
-```
+These test files demonstrate how to start containers, establish connections, and prepare test data for each supported service.
 
 ## Running Tests
 
