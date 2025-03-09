@@ -1,9 +1,11 @@
-package dockertestx
+package minio
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/vvatanabe/dockertestx/internal"
+	"github.com/vvatanabe/dockertestx/sql"
 	"strings"
 	"testing"
 	"time"
@@ -39,7 +41,7 @@ func NewMinIO(t testing.TB) (*s3.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewMinIOWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
+func NewMinIOWithOptions(t testing.TB, runOpts []sql.RunOption, hostOpts ...func(*docker.HostConfig)) (*s3.Client, func()) {
 	t.Helper()
 
 	// Set default run options for MinIO
@@ -78,13 +80,13 @@ func NewMinIOWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*do
 	}
 
 	t.Logf("MinIO container is running on host port '%s'", actualPort)
-	// GetHostPort may return a format like "localhost:55250", 
+	// GetHostPort may return a format like "localhost:55250",
 	// so remove the "localhost:" prefix if present
 	actualPort = strings.TrimPrefix(actualPort, "localhost:")
 
 	// Get access and secret keys from environment variables
-	accessKey := getEnvValue(defaultRunOpts.Env, "MINIO_ROOT_USER")
-	secretKey := getEnvValue(defaultRunOpts.Env, "MINIO_ROOT_PASSWORD")
+	accessKey := internal.GetEnvValue(defaultRunOpts.Env, "MINIO_ROOT_USER")
+	secretKey := internal.GetEnvValue(defaultRunOpts.Env, "MINIO_ROOT_PASSWORD")
 
 	// Wait for MinIO to be ready
 	var s3Client *s3.Client
@@ -96,29 +98,29 @@ func NewMinIOWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*do
 	t.Logf("Connecting to MinIO endpoint: %s with credentials %s:%s", endpoint, accessKey, secretKey)
 
 	if err = pool.Retry(func() error {
-			// Load AWS SDK Go v2 configuration
-			cfg, err := config.LoadDefaultConfig(ctx,
-				config.WithRegion("us-east-1"),
-				config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
-			)
-			if err != nil {
-				return fmt.Errorf("failed to load AWS config: %w", err)
-			}
+		// Load AWS SDK Go v2 configuration
+		cfg, err := config.LoadDefaultConfig(ctx,
+			config.WithRegion("us-east-1"),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to load AWS config: %w", err)
+		}
 
-			// Create S3 client with direct option settings
-			s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
-				o.UsePathStyle = true // MinIO requires path-style addressing
-				o.BaseEndpoint = aws.String(endpoint)
-			})
+		// Create S3 client with direct option settings
+		s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.UsePathStyle = true // MinIO requires path-style addressing
+			o.BaseEndpoint = aws.String(endpoint)
+		})
 
-			// Test if the S3 API is responding
-			_, err = s3Client.ListBuckets(ctx, &s3.ListBucketsInput{})
-			if err != nil {
-				t.Logf("Failed to list buckets, retrying: %v", err)
-				return err
-			}
-			return nil
-		}); err != nil {
+		// Test if the S3 API is responding
+		_, err = s3Client.ListBuckets(ctx, &s3.ListBucketsInput{})
+		if err != nil {
+			t.Logf("Failed to list buckets, retrying: %v", err)
+			return err
+		}
+		return nil
+	}); err != nil {
 		_ = pool.Purge(resource)
 		t.Fatalf("failed to connect to MinIO: %s", err)
 	}

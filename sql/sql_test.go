@@ -1,17 +1,17 @@
-package dockertestx_test
+package sql_test
 
 import (
+	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 )
 
 // TestDefaultMySQL demonstrates using NewMySQL with default options.
 func TestDefaultMySQL(t *testing.T) {
 	// Start a MySQL container with default options.
-	db, cleanup := dockertestx.NewMySQL(t)
+	db, cleanup := sql.NewMySQL(t)
 	defer cleanup()
 
 	// Schema SQL for creating a table in MySQL.
@@ -26,7 +26,7 @@ func TestDefaultMySQL(t *testing.T) {
 	insertStmt := `INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');`
 
 	// Prepare the database by creating the table and inserting initial data.
-	if err := dockertestx.PrepDatabase(t, db, dockertestx.InitialDBSetup{
+	if err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
 		SchemaSQL:   schema,
 		InitialData: []string{insertStmt},
 	}); err != nil {
@@ -60,7 +60,7 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a MySQL container with a custom database name.
-	db, cleanup := dockertestx.NewMySQLWithOptions(t, []dockertestx.RunOption{customEnv})
+	db, cleanup := sql.NewMySQLWithOptions(t, []sql.RunOption{customEnv})
 	defer cleanup()
 
 	// Schema SQL for creating a table.
@@ -74,7 +74,7 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 	insertStmt := `INSERT INTO customers (name, email) VALUES ('Bob', 'bob@example.com');`
 
 	// Prepare the database.
-	if err := dockertestx.PrepDatabase(t, db, dockertestx.InitialDBSetup{
+	if err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
 		SchemaSQL:   schema,
 		InitialData: []string{insertStmt},
 	}); err != nil {
@@ -99,7 +99,7 @@ func TestMySQLWithCustomRunOptions(t *testing.T) {
 // TestDefaultPostgres demonstrates using NewPostgres with default options.
 func TestDefaultPostgres(t *testing.T) {
 	// Start a PostgreSQL container with default options.
-	db, cleanup := dockertestx.NewPostgres(t)
+	db, cleanup := sql.NewPostgres(t)
 	defer cleanup()
 
 	// Schema SQL for creating a table in PostgreSQL.
@@ -113,7 +113,7 @@ func TestDefaultPostgres(t *testing.T) {
 	insertStmt := `INSERT INTO users (name, email) VALUES ('Charlie', 'charlie@example.com');`
 
 	// Prepare the database.
-	if err := dockertestx.PrepDatabase(t, db, dockertestx.InitialDBSetup{
+	if err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
 		SchemaSQL:   schema,
 		InitialData: []string{insertStmt},
 	}); err != nil {
@@ -143,7 +143,7 @@ func TestPostgresWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a PostgreSQL container with the AutoRemove option.
-	db, cleanup := dockertestx.NewPostgresWithOptions(t, nil, autoRemove)
+	db, cleanup := sql.NewPostgresWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	// Schema SQL for creating a table.
@@ -157,7 +157,7 @@ func TestPostgresWithCustomHostOptions(t *testing.T) {
 	insertStmt := `INSERT INTO orders (item, quantity) VALUES ('Widget', 10);`
 
 	// Prepare the database.
-	if err := dockertestx.PrepDatabase(t, db, dockertestx.InitialDBSetup{
+	if err := sql.PrepDatabase(t, db, sql.InitialDBSetup{
 		SchemaSQL:   schema,
 		InitialData: []string{insertStmt},
 	}); err != nil {

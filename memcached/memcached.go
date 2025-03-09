@@ -1,7 +1,8 @@
-package dockertestx
+package memcached
 
 import (
 	"fmt"
+	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 	"time"
 
@@ -29,7 +30,7 @@ func NewMemcached(t testing.TB) (*memcache.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewMemcachedWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*memcache.Client, func()) {
+func NewMemcachedWithOptions(t testing.TB, runOpts []sql.RunOption, hostOpts ...func(*docker.HostConfig)) (*memcache.Client, func()) {
 	t.Helper()
 
 	pool, err := dockertest.NewPool("")

@@ -1,8 +1,9 @@
-package dockertestx
+package dynamodb
 
 import (
 	"context"
 	"fmt"
+	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 	"time"
 
@@ -35,7 +36,7 @@ func NewDynamoDB(t testing.TB) (*dynamodb.Client, func()) {
 //
 // Additional RunOption functions can be provided via the runOpts parameter to override these defaults,
 // and optional host configuration functions can be provided via hostOpts.
-func NewDynamoDBWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*docker.HostConfig)) (*dynamodb.Client, func()) {
+func NewDynamoDBWithOptions(t testing.TB, runOpts []sql.RunOption, hostOpts ...func(*docker.HostConfig)) (*dynamodb.Client, func()) {
 	t.Helper()
 
 	// Set default options for DynamoDB Local

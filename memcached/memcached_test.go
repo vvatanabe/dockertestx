@@ -1,18 +1,19 @@
-package dockertestx_test
+package memcached_test
 
 import (
+	"github.com/vvatanabe/dockertestx/memcached"
+	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/vvatanabe/dockertestx"
 )
 
 // TestDefaultMemcached demonstrates using NewMemcached with default options.
 func TestDefaultMemcached(t *testing.T) {
 	// Start a Memcached container with default options.
-	client, cleanup := dockertestx.NewMemcached(t)
+	client, cleanup := memcached.NewMemcached(t)
 	defer cleanup()
 
 	// Test setting and getting a value
@@ -48,7 +49,7 @@ func TestMemcachedWithCustomRunOptions(t *testing.T) {
 	}
 
 	// Start a Memcached container with a custom tag
-	client, cleanup := dockertestx.NewMemcachedWithOptions(t, []dockertestx.RunOption{customTag})
+	client, cleanup := memcached.NewMemcachedWithOptions(t, []sql.RunOption{customTag})
 	defer cleanup()
 
 	// Test basic functionality
@@ -81,7 +82,7 @@ func TestMemcachedWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Start a Memcached container with AutoRemove option
-	client, cleanup := dockertestx.NewMemcachedWithOptions(t, nil, autoRemove)
+	client, cleanup := memcached.NewMemcachedWithOptions(t, nil, autoRemove)
 	defer cleanup()
 
 	// Test multiple operations
@@ -97,7 +98,7 @@ func TestMemcachedWithCustomHostOptions(t *testing.T) {
 	}
 
 	// Use PrepMemcached to set up test data
-	if err := dockertestx.PrepMemcached(t, client, items...); err != nil {
+	if err := memcached.PrepMemcached(t, client, items...); err != nil {
 		t.Fatalf("PrepMemcached failed: %v", err)
 	}
 
@@ -116,7 +117,7 @@ func TestMemcachedWithCustomHostOptions(t *testing.T) {
 
 // TestMemcachedOperations demonstrates various Memcached operations.
 func TestMemcachedOperations(t *testing.T) {
-	client, cleanup := dockertestx.NewMemcached(t)
+	client, cleanup := memcached.NewMemcached(t)
 	defer cleanup()
 
 	t.Run("Set and Get", func(t *testing.T) {

@@ -1,7 +1,9 @@
-package dockertestx_test
+package dynamodb_test
 
 import (
 	"context"
+	dynamodb2 "github.com/vvatanabe/dockertestx/dynamodb"
+	"github.com/vvatanabe/dockertestx/sql"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,12 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/ory/dockertest/v3"
-	"github.com/vvatanabe/dockertestx"
 )
 
 func TestDynamoDB(t *testing.T) {
 	// Start a DynamoDB container with default options
-	client, cleanup := dockertestx.NewDynamoDB(t)
+	client, cleanup := dynamodb2.NewDynamoDB(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -35,7 +36,7 @@ func TestDynamoDB(t *testing.T) {
 	}
 
 	// Create table
-	err := dockertestx.CreateDynamoDBTable(t, client, tableName, keySchema, attrDefs)
+	err := dynamodb2.CreateDynamoDBTable(t, client, tableName, keySchema, attrDefs)
 	if err != nil {
 		t.Fatalf("Failed to create table: %v", err)
 	}
@@ -63,7 +64,7 @@ func TestDynamoDB(t *testing.T) {
 		items = append(items, item)
 	}
 
-	err = dockertestx.PrepDynamoDBItems(t, client, tableName, items)
+	err = dynamodb2.PrepDynamoDBItems(t, client, tableName, items)
 	if err != nil {
 		t.Fatalf("Failed to insert items: %v", err)
 	}
@@ -101,7 +102,7 @@ func TestDynamoDB(t *testing.T) {
 	}
 
 	// Test table deletion
-	err = dockertestx.DeleteDynamoDBTable(t, client, tableName)
+	err = dynamodb2.DeleteDynamoDBTable(t, client, tableName)
 	if err != nil {
 		t.Fatalf("Failed to delete table: %v", err)
 	}
@@ -110,7 +111,7 @@ func TestDynamoDB(t *testing.T) {
 // TestDynamoDBWithOptions demonstrates how to customize the DynamoDB container
 func TestDynamoDBWithOptions(t *testing.T) {
 	// Use custom options
-	runOpts := []dockertestx.RunOption{
+	runOpts := []sql.RunOption{
 		func(opts *dockertest.RunOptions) {
 			opts.Tag = "1.21.0" // Specific version
 			opts.Env = append(opts.Env, "AWS_ACCESS_KEY_ID=customkey")
@@ -120,7 +121,7 @@ func TestDynamoDBWithOptions(t *testing.T) {
 	}
 
 	// Start container with custom options
-	client, cleanup := dockertestx.NewDynamoDBWithOptions(t, runOpts)
+	client, cleanup := dynamodb2.NewDynamoDBWithOptions(t, runOpts)
 	defer cleanup()
 
 	// Verify container works

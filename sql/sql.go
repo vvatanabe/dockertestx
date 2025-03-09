@@ -1,9 +1,10 @@
-package dockertestx
+package sql
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/vvatanabe/dockertestx/internal"
 	"io"
 	"log"
 	"testing"
@@ -114,8 +115,8 @@ func NewMySQLWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(*do
 		opt(defaultRunOpts)
 	}
 
-	pass := getEnvValue(defaultRunOpts.Env, "MYSQL_ROOT_PASSWORD")
-	db := getEnvValue(defaultRunOpts.Env, "MYSQL_DATABASE")
+	pass := internal.GetEnvValue(defaultRunOpts.Env, "MYSQL_ROOT_PASSWORD")
+	db := internal.GetEnvValue(defaultRunOpts.Env, "MYSQL_DATABASE")
 
 	return NewDockerDB(t, defaultRunOpts, "3306/tcp", "mysql", func(actualPort string) string {
 		return fmt.Sprintf("root:%s@tcp(%s)/%s?parseTime=true", pass, actualPort, db)
@@ -161,8 +162,8 @@ func NewPostgresWithOptions(t testing.TB, runOpts []RunOption, hostOpts ...func(
 		opt(defaultRunOpts)
 	}
 
-	pass := getEnvValue(defaultRunOpts.Env, "POSTGRES_PASSWORD")
-	db := getEnvValue(defaultRunOpts.Env, "POSTGRES_DB")
+	pass := internal.GetEnvValue(defaultRunOpts.Env, "POSTGRES_PASSWORD")
+	db := internal.GetEnvValue(defaultRunOpts.Env, "POSTGRES_DB")
 
 	return NewDockerDB(t, defaultRunOpts, "5432/tcp", "postgres", func(actualPort string) string {
 		return fmt.Sprintf("postgres://postgres:%s@%s/%s?sslmode=disable", pass, actualPort, db)
@@ -208,16 +209,4 @@ func PrepDatabase(t testing.TB, db *sql.DB, setups ...InitialDBSetup) error {
 		}
 	}
 	return nil
-}
-
-// getEnvValue searches the given slice of environment variable strings for the specified key
-// and returns its value. If the key is not found, it returns an empty string.
-func getEnvValue(env []string, key string) string {
-	prefix := key + "="
-	for _, v := range env {
-		if len(v) >= len(prefix) && v[:len(prefix)] == prefix {
-			return v[len(prefix):]
-		}
-	}
-	return ""
 }
