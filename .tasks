@@ -60,7 +60,7 @@ Template for adding middleware support:
 - Description: Implement and test RabbitMQ integration in dockertestx.  
 - Middleware: RabbitMQ  
 - Client Library: [github.com/streadway/amqp](https://github.com/streadway/amqp)  
-- Status: Pending  
+- Status: Completed  
 
 ---
 
@@ -78,4 +78,4 @@ Template for adding middleware support:
 - Description: Implement and test Amazon SQS integration in dockertestx.  
 - Middleware: Amazon SQS  
 - Client Library: [github.com/aws/aws-sdk-go-v2/service/sqs](https://github.com/aws/aws-sdk-go-v2)  
-- Status: Pending  
+- Status: Pending

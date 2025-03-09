@@ -14,6 +14,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/ory/dockertest/v3 v3.11.0
 	github.com/redis/go-redis/v9 v9.7.1
+	github.com/streadway/amqp v1.1.0
 )
 
 require (
